@@ -1,0 +1,198 @@
+base:
+  table_top_scale_x: 2.5999999046325684
+  table_top_scale_y: 2.5999999046325684
+  table_top_height: 0.0
+  table_top_shape: 1.0
+  table_top_thickness: 0.0
+  table_top_profile_state: 2
+  table_top_profile_strength: 0.0
+  legs_shape_1: 1.0
+  legs_shape_2: 1.0
+  legs_bevel: 0.0
+  std_legs_bottom_offset_y: 1.0
+  std_legs_mid_offset_y: 0.0
+  std_legs_top_offset_x: 0.26999998092651367
+  std_legs_top_offset_y: 0.0
+  std_legs_rotation: 0.0
+  is_std_legs_support_x: 1
+  std_legs_support_x_height: 0.7200000286102295
+  std_legs_support_x_curvature: 0.0
+  std_legs_support_x_profile_width: 1.0
+  std_legs_support_x_profile_height: 0.27000004053115845
+  is_std_legs_support_y: 1
+  std_legs_support_y_height: 0.36000001430511475
+  std_legs_support_y_curvature: 0.0
+  std_legs_support_y_profile_width: 1.0
+  std_legs_support_y_profile_height: 1.0
+  is_monoleg: 0
+  is_monoleg_tent: 1
+  monoleg_tent_pct: 0.6649518609046936
+  monoleg_tent_base_radius: 0.0
+  monoleg_tent_count: 5
+  monoleg_bezier_start_x_offset: 0.5273312330245972
+  monoleg_bezier_start_handle_x_offset: 1.0
+  monoleg_bezier_start_handle_z_pct: 0.46000000834465027
+  monoleg_bezier_end_x_offset: 0.2499999850988388
+  monoleg_bezier_end_handle_x_offset: 0.10999999940395355
+  monoleg_bezier_end_handle_z_pct: 0.20999999344348907
+dataset_generation:
+  table_top_scale_x:
+    min: 0.6
+    max: 2.6
+    samples: 12
+  table_top_scale_y:
+    min: 0.6
+    max: 2.6
+    samples: 12
+  table_top_height:
+    min: 0.0
+    max: 1.0
+    samples: 8
+  table_top_shape:
+    min: 0.0
+    max: 1.0
+    samples: 11
+  table_top_thickness:
+    min: 0.0
+    max: 1.0
+    samples: 6
+  table_top_profile_state:
+    min: 0
+    max: 3
+  table_top_profile_strength:
+    min: 0.0
+    max: 1.0
+    samples: 6
+  legs_shape_1:
+    min: 0.0
+    max: 1.0
+    samples: 3
+  legs_shape_2:
+    min: 0.0
+    max: 1.0
+    samples: 3
+  legs_bevel:
+    min: 0.0
+    max: 1.0
+    samples: 3
+  std_legs_bottom_offset_y:
+    min: 0.0
+    max: 1.0
+    samples: 6
+  std_legs_mid_offset_y:
+    min: 0.0
+    max: 1.0
+    samples: 6
+  std_legs_top_offset_x:
+    min: 0.0
+    max: 1.0
+    samples: 6
+  std_legs_top_offset_y:
+    min: 0.0
+    max: 1.0
+    samples: 6
+  std_legs_rotation:
+    min: 0.0
+    max: 1.0
+    samples: 6
+  is_std_legs_support_x:
+    min: 0
+    max: 1
+  std_legs_support_x_height:
+    min: 0.0
+    max: 1.0
+    samples: 6
+  std_legs_support_x_curvature:
+    min: 0.0
+    max: 1.0
+    samples: 6
+  std_legs_support_x_profile_width:
+    min: 0.0
+    max: 1.0
+    samples: 5
+  std_legs_support_x_profile_height:
+    min: 0.0
+    max: 1.0
+    samples: 5
+  is_std_legs_support_y:
+    min: 0
+    max: 1
+  std_legs_support_y_height:
+    min: 0.0
+    max: 1.0
+    samples: 6
+  std_legs_support_y_curvature:
+    min: 0.0
+    max: 1.0
+    samples: 6
+  std_legs_support_y_profile_width:
+    min: 0.0
+    max: 1.0
+    samples: 5
+  std_legs_support_y_profile_height:
+    min: 0.0
+    max: 1.0
+    samples: 5
+  is_monoleg:
+    min: 0
+    max: 1
+  is_monoleg_tent:
+    min: 0
+    max: 1
+  monoleg_tent_pct:
+    min: 0.2
+    max: 0.8
+    samples: 7
+  monoleg_tent_base_radius:
+    min: 0.0
+    max: 1.0
+    samples: 11
+  monoleg_tent_count:
+    min: 3
+    max: 8
+  monoleg_bezier_start_x_offset:
+    min: 0.0
+    max: 1.0
+    samples: 6
+  monoleg_bezier_start_handle_x_offset:
+    min: 0.0
+    max: 1.0
+    samples: 6
+  monoleg_bezier_start_handle_z_pct:
+    min: 0.0
+    max: 1.0
+    samples: 6
+  monoleg_bezier_end_x_offset:
+    min: 0.2
+    max: 1.0
+    samples: 5
+  monoleg_bezier_end_handle_x_offset:
+    min: 0.0
+    max: 1.0
+    samples: 6
+  monoleg_bezier_end_handle_z_pct:
+    min: 0.0
+    max: 1.0
+    samples: 6
+constraints:
+  rule1: monoleg_bezier_end_x_offset >= monoleg_bezier_start_x_offset
+visibility_conditions:
+  legs_shape_: ( is_monoleg and is_monoleg_tent ) or ( not is_monoleg )
+  legs_bevel: ( is_monoleg and is_monoleg_tent ) or ( not is_monoleg )
+  is_monoleg_tent: is_monoleg
+  monoleg_tent_pct: is_monoleg and is_monoleg_tent
+  monoleg_tent_count: is_monoleg and is_monoleg_tent
+  monoleg_tent_base_radius: is_monoleg and is_monoleg_tent
+  monoleg_bezier: is_monoleg and ( not is_monoleg_tent or monoleg_tent_pct < 0.4 )
+  std_legs_support_x_: ( not is_monoleg ) and is_std_legs_support_x
+  std_legs_support_y_: ( not is_monoleg ) and is_std_legs_support_y
+  std_legs: ( not is_monoleg )
+  table_top_profile_strength: table_top_profile_state > 0
+camera_angles_train:
+- - -30.0
+  - 35.0
+- - -30.0
+  - 55.0
+camera_angles_test:
+- - -30.0
+  - 15.0
