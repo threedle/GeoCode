@@ -14,34 +14,11 @@
 - During _visualization_ and _sketch generation_, we recommend a setup with multiple GPU nodes, refer to the additional information to run in parallel on all available nodes
 - During test-set evaluation, generation of raw shapes for a new dataset, and during _stability metric_ evaluation, a single node with 20 CPU is recommended
 
-## Runing the test-set evaluation using our dataset and saved checkpoint
+## Running the test-set evaluation using our dataset and saved checkpoint
 
-<style>
-table, tr, td, th {
-    border: none !important;
-}
-</style>
-
-<table style="border-width: 3px;">
-<thead>
-	<tr>
-		<th>Ground Truth</th>
-		<th>Point Cloud</th>
-		<th>Prediction from Point Cloud</th>
-		<th>Sketch</th>
-		<th>Prediction from Sketch</th>
-	</tr>
-</thead>
-<tbody>
-	<tr>
-		<td><img alt="gt" src="resources/sample/chair_back_frame_mid_y_offset_pct_0_0000_0002_gt_mesh.png" width="200" height="200"></td>
-		<td><img alt="gt" src="resources/sample/chair_back_frame_mid_y_offset_pct_0_0000_0002_gt_pc.png" width="200" height="200"></td>
-		<td><img alt="gt" src="resources/sample/chair_back_frame_mid_y_offset_pct_0_0000_0002_pred_pc.png" width="200" height="200"></td>
-		<td><img alt="gt" src="resources/sample/chair_back_frame_mid_y_offset_pct_0_0000_0002_-30.0_35.0.png" width="200" height="200"></td>
-		<td><img alt="gt" src="resources/sample/chair_back_frame_mid_y_offset_pct_0_0000_0002_-30.0_35.0_pred_sketch.png" width="200" height="200"></td>
-	</tr>
-</tbody>
-</table>
+<div style="text-align: center">
+<img src="resources/sample/chair_back_frame_mid_y_offset_pct_0_0000_0002.png" alt="3D shape recovery" height="270"/>
+</div>
 
 ### Installation
 
