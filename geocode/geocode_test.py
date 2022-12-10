@@ -62,7 +62,7 @@ def get_chamfer_distance(target_pc, gt_pc, device, num_points_in_pc, check_rot=F
 def save_as_obj_proc(pred_yml_file_path: Path, recipe_file_path: Path, results_dir: Path, out_dir: str, blender_exe: str, blend_file: str):
     target_obj_file_path = results_dir.joinpath(out_dir, f'{pred_yml_file_path.stem}.obj')
     print(f"Converting [{pred_yml_file_path}] to obj file [{target_obj_file_path}]")
-    save_obj_script_path = Path(__file__).parent.joinpath('..', 'dataset_processing', 'save_obj.py').resolve()
+    save_obj_script_path = Path(__file__).parent.joinpath('..', 'common', 'save_obj.py').resolve()
     cmd = [f'{str(Path(blender_exe).expanduser())}', f'{str(Path(blend_file).expanduser())}', '-b', '--python',
            f"{str(save_obj_script_path)}", '--',
            '--recipe-file-path', str(recipe_file_path),

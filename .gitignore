@@ -27,6 +27,7 @@ MANIFEST
 .DS_Store
 datasets/
 *.zip.
+*.zip
 .idea/
 Logs/
 cls/
@@ -40,4 +41,4 @@ neptune_session.json
 *.egg_inf
 lightning_logs/
 stability_results.json
-dataset_processing/model-converter-python/
+dataset_processing/

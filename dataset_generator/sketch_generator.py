@@ -22,7 +22,6 @@ def import_parents(level=1):
     try:
         sys.path.remove(str(parent))
     except ValueError:
-        # already removed
         pass
 
     __package__ = '.'.join(parent.parts[len(top.parts):])
