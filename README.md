@@ -6,51 +6,93 @@
 
 > We present GeoCode, a technique for 3D shape synthesis using an intuitively editable parameter space. We build a novel program that enforces a complex set of rules and enables users to perform intuitive and controlled high-level edits that procedurally propagate at a low level to the entire shape. Our program produces high-quality mesh outputs by construction. We use a neural network to map a given point cloud or sketch to our interpretable parameter space. Once produced by our procedural program, shapes can be easily modified. Empirically, we show that GeoCode can infer and recover 3D shapes more accurately compared to existing techniques and we demonstrate its ability to perform controlled local and global shape manipulations.
 
-## Code structure
+## Run the test using our dataset and checkpoint
 
-- `common` - util packages and classes that are shared by multiple other directories
-- `config` - contains the neptune.ai configurations file
-- `data` - dataset related classes
-- `dataset_processing` - scripts that are intended to manipulate existing datasets
-- `geocode` - main training and testing code
-- `models` - point cloud and sketch encoders and the decoders network
-- `scripts` - contains script to set up our datasets and saved checkpoints 
-- `stability_metric` - script to evaluate a tested phase using our *stability metric*
-- `visualize_results` - script to generate the renders for all ground truth and predicted shapes
+### Installation
 
-## Environment
-
-Install Blender
-```bash
-mkdir ~/Blender
-cd ~/Blender
-wget https://mirror.freedif.org/blender/release/Blender3.2/blender-3.2.0-linux-x64.tar.xz
-tar -xvf blender-3.2.0-linux-x64.tar.xz
-BLENDER_PYTHON_BIN=~/Blender/blender-3.2.0-linux-x64/3.2/python/bin
-cd ${BLENDER_PYTHON_BIN}
-wget -P /tmp https://bootstrap.pypa.io/get-pip.py
-${BLENDER_PYTHON_BIN}/python3.10 /tmp/get-pip.py
-${BLENDER_PYTHON_BIN}/python3.10 -m pip install --upgrade pip
-${BLENDER_PYTHON_BIN}/python3.10 -m pip install pyyaml
-${BLENDER_PYTHON_BIN}/python3.10 -m pip install tqdm
-```
-
-Clone and create a Conda environment
+Clone and create the Conda environment
 ```bash
 git clone https://github.com/threedle/GeoCode.git
 cd GeoCode
 conda env create -f environment.yml
 conda activate geocode
 python setup.py install
+
+# Install Blender 3.2 under `~/Blender`
+./scripts/install_blender3.2.sh
+
+# Download the dataset (`~/datasets`), checkpoint (`~/models`) and blend file (`~/blends`) of the `chair` domain
+python scripts/download_ds.py --domain chair --datasets-dir ~/datasets --models-dir ~/models --blends-dir ~/blends
 ```
 
-We highly encourage the use of [neptune.ai](https://neptune.ai/) for logging.
-First open an account and create a project, create the file `GeoCode/config/neptune_config.yml`, and fill in the following:
+`vase` and `table` domains are also available
+
+### Run the test for the chair domain
+
+Run the test for the `chair` domain using the downloaded checkpoint, make sure the directories match the directories using in the download step
+```bash
+cd GeoCode
+conda activate geocode
+python geocode/geocode.py test --blend-file ~/blends/procedural_chair.blend --models-dir ~/models --dataset-dir ~/datasets --input-type pc sketch --phase test --exp-name exp_geocode_chair
 ```
-neptune:
-  api_token: "<TOKEN>"
-  project: "<POJECT_PATH>"
+
+This will generate the results in the following directory structure, in 
 ```
+<datasets-dir>
+│
+└───ChairDataset
+    │
+    └───test
+        │
+        └───resutls_<experiment_name>
+            │
+            └───barplot                    <-- model accuracy graph
+            └───obj_gt                     <-- 3D objects of the ground truth samples
+            └───obj_predictions_pc         <-- 3D objects predicted from point cloud input
+            └───obj_predictions_sketch     <-- 3D objects predicted from sketch input
+            └───yml_gt                     <-- labels of the ground truth objects
+            └───yml_predictions_pc         <-- labels of the objects predicted from point cloud input
+            └───yml_predictions_sketch     <-- labels of the objects predicted from sketch input
+```
+
+We also provide a way to automatically render the resulting 3D objects
+
+```bash
+cd GeoCode
+conda activate geocode
+~/Blender/blender-3.2.0-linux-x64/blender ~/blends/procedural_chair.blend -b --python visualize_results/visualize.py -- --dataset-dir ~/datasets --dataset-name ChairDataset --phase test --exp-name exp_geocode_chair
+```
+
+this will generate the following additional directories:
+```
+            ⋮
+            └───render_gt                  <-- renders of the ground truth objects
+            └───render_predictions_pc      <-- renders of the objects predicted from point cloud input
+            └───render_predictions_sketch  <-- renders of the objects predicted from sketch input
+```
+
+Example for output
+
+TODO: add images here
+
+## Run training on our dataset
+
+TODO: complete this
+
+## Inspecting the blend files
+
+Open one of the Blend files using Blender 3.2.
+
+To modify the shape using the parameters and to inspect the Geometry Nodes Program click the "Geometry Node" workspace at the top of the window
+
+![alt GeoCode](resources/geo_nodes_button.png)
+
+Then you will see the following screen
+
+![alt GeoCode](resources/geo_nodes_workspace.png)
+
+# Detailed WIKI
+
 
 ## Download the datasets, blend files, and checkpoint files
 
@@ -122,6 +164,15 @@ Please note that training using our checkpoints will show start epoch of 0.
 cd GeoCode
 conda activate geocode
 python geocode/geocode.py train --models-dir ~/models --dataset-dir ~/datasets --nepoch=600 --batch_size=33 --input-type pc sketch --exp-name exp_geocode_chair
+```
+
+For logging during training, we encourage the use of [neptune.ai](https://neptune.ai/).
+First open an account and create a project, create the file `GeoCode/config/neptune_config.yml` with the following content:
+
+```
+neptune:
+  api_token: "<TOKEN>"
+  project: "<POJECT_PATH>"
 ```
 
 ## Test (1 GPU and 20 cpus setup is recommended)
@@ -274,3 +325,15 @@ options:
                         Apply normalization on the imported objects
   --limit LIMIT         Limit the number of shapes that will be evaluated, randomly selected shapes will be tested
 ```
+
+## Code structure
+
+- `common` - util packages and classes that are shared by multiple other directories
+- `config` - contains the neptune.ai configurations file
+- `data` - dataset related classes
+- `dataset_processing` - scripts that are intended to manipulate existing datasets
+- `geocode` - main training and testing code
+- `models` - point cloud and sketch encoders and the decoders network
+- `scripts` - contains script to set up our datasets and saved checkpoints 
+- `stability_metric` - script to evaluate a tested phase using our *stability metric*
+- `visualize_results` - script to generate the renders for all ground truth and predicted shapes

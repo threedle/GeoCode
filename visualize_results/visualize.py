@@ -142,13 +142,11 @@ def render_images(target_dir: Path, file_name, suffix=None):
         look_at(new_camera, Vector((0.0, 0.0, 0.0)))
 
         # render
-        # scene.render.engine = 'BLENDER_EEVEE'  # don't need anything fancy here
         scene.camera = new_camera
         scene.render.filepath = str(target_file)
         scene.render.resolution_x = 224
         scene.render.resolution_y = 224
         bpy.context.scene.cycles.samples = 5
-        # bpy.context.scene.eevee.taa_render_samples = 32
         # disable the sketch shader
         bpy.context.scene.render.use_freestyle = False
         bpy.ops.render.render(write_still=True)

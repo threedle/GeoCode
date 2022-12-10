@@ -28,11 +28,11 @@ MANIFEST
 datasets/
 *.zip.
 .idea/
-Models/
 Logs/
 cls/
 slurm-*.out
 node_modules/
+additional/
 neptune_config.yml
 neptune_session.json
 .neptune/
