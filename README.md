@@ -45,7 +45,7 @@ Run the test for the `chair` domain using the downloaded checkpoint, make sure t
 ```bash
 cd GeoCode
 conda activate geocode
-python geocode/geocode.py test --blend-file ~/blends/procedural_chair.blend --models-dir ~/models --dataset-dir ~/datasets --input-type pc sketch --phase test --exp-name exp_geocode_chair
+python geocode/geocode.py test --blender-exe ~/Blender/blender-3.2.0-linux-x64/blender --blend-file ~/blends/procedural_chair.blend --models-dir ~/models --dataset-dir ~/datasets/ChairDataset --input-type pc sketch --phase test --exp-name exp_geocode_chair
 ```
 
 This will generate the results in the following directory structure, in 

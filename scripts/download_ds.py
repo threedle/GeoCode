@@ -56,7 +56,7 @@ def download_ds(args):
         target_ds_zip_file_path = datasets_dir.joinpath(ds_zip_file_name)
         # download requested dataset zip file from Google Drive
         if not target_ds_zip_file_path.is_file():
-            gdown.download(ds_url, target_ds_zip_file_path, quiet=False)
+            gdown.download(ds_url, str(target_ds_zip_file_path), quiet=False)
         else:
             print(f"Skipping downloading dataset from Google Drive, file [{target_ds_zip_file_path}] already exists.")
 
