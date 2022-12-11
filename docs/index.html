@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="description"
+        content="GeoCode maps 3D shapes to a human-interpretable parameter space allowing intuitive edits to the recovered 3D shapes from a point could or sketch input.">
+  <meta name="keywords" content="GeoCode">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GeoCode: Interpretable Shape Programs</title>
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
+        rel="stylesheet">
+
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+  <link rel="icon" href="./static/images/favicon.svg">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+  <script src="./static/js/bulma-carousel.min.js"></script>
+  <script src="./static/js/bulma-slider.min.js"></script>
+  <script src="./static/js/index.js"></script>
+</head>
+<body>
+
+<nav class="navbar" role="navigation" aria-label="main navigation">
+  <div class="navbar-brand">
+    <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+    </a>
+  </div>
+  <div class="navbar-menu">
+    <div class="navbar-start" style="flex-grow: 1; justify-content: center;">
+      <a class="navbar-item" href="https://github.com/ofekp">
+      <span class="icon">
+          <i class="fab fa-github"></i>
+      </span>
+      </a>
+
+      <div class="navbar-item has-dropdown is-hoverable">
+        <a class="navbar-link">
+          More Research
+        </a>
+        <div class="navbar-dropdown">
+          <a class="navbar-item" href="https://3dl.cs.uchicago.edu/">
+            3DL
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</nav>
+
+
+<section class="hero">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column has-text-centered">
+          <h1 class="title is-1 publication-title">GeoCode: Interpretable Shape Programs</h1>
+          <div class="is-size-5 publication-authors">
+            <span class="author-block">
+              <a href="https://github.com/ofekp">Ofek Pearl</a><sup>1</sup>,</span>
+            <span class="author-block">
+              <a href="https://scholar.google.com/citations?user=q0bBhtsAAAAJ">Itai Lang</a><sup>2</sup>,</span>
+            <span class="author-block">
+              <a href="https://yuhuahu310.github.io/">Yuhua Hu</a><sup>2</sup>,
+            </span>
+            <span class="author-block">
+              <a href="https://raymond-yeh.com/">Raymond A. Yeh</a><sup>3</sup>,
+            </span>
+            <span class="author-block">
+              <a href="https://people.cs.uchicago.edu/~ranahanocka/">Rana Hanocka</a><sup>2</sup>,
+            </span>
+          </div>
+
+          <div class="is-size-5 publication-authors">
+            <span class="author-block"><sup>1</sup>Tel Aviv University,</span>
+            <span class="author-block"><sup>2</sup>University of Chicago,</span>
+            <span class="author-block"><sup>3</sup>Purdue University</span>
+          </div>
+
+          <div class="column has-text-centered">
+            <div class="publication-links">
+              <!-- PDF Link. -->
+              <span class="link-block">
+                <!-- TODO: link -->
+                <a href=""
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fas fa-file-pdf"></i>
+                  </span>
+                  <span>Paper</span>
+                </a>
+              </span>
+              <span class="link-block">
+                <!-- TODO: link -->
+                <a href=""
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="ai ai-arxiv"></i>
+                  </span>
+                  <span>arXiv</span>
+                </a>
+              </span>
+              <!-- Video Link. -->
+              <span class="link-block">
+                <a href="https://youtu.be/VDufFcVIOzM"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fab fa-youtube"></i>
+                  </span>
+                  <span>Demo Video</span>
+                </a>
+              </span>
+              <!-- Code Link. -->
+              <span class="link-block">
+                <a href="https://github.com/threedle/GeoCode"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fab fa-github"></i>
+                  </span>
+                  <span>Code</span>
+                  </a>
+              </span>
+              <!-- Programs Link. -->
+              <span class="link-block">
+                <a href="https://github.com/threedle/GeoCode/releases/latest"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fab fa-codepen"></i>
+                  </span>
+                  <span>Programs</span>
+                  </a>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body is-centered has-text-centered">
+      <p>
+        <img alt="GeoCode teaser" src="static/images/teaser.png">
+      </p>
+      <h2 class="subtitle has-text-centered">
+        <span class="dnerf">GeoCode</span> maps 3D shapes to human-interpretable parameter space, allowing to intuitively edit the recovered 3D shapes from a point could or sketch input.
+      </h2>
+    </div>
+  </div>
+</section>
+
+
+<section class="hero is-light is-small">
+  <div class="hero-body">
+    <div class="container">
+      <div id="results-carousel" class="carousel results-carousel">
+        <div class="item item-interpolation-chair">
+          <img id="interpolation-chair" alt="Chair Interpolation" src="static/images/interpolation/interpolation_chair.gif">
+        </div>
+        <div class="item item-interpolation-vase">
+          <img id="interpolation-vase" alt="Vase Interpolation" src="static/images/interpolation/interpolation_vase.gif">
+        </div>
+        <div class="item item-interpolation-table">
+          <img id="interpolation-table" alt="Table Interpolation" src="static/images/interpolation/interpolation_table.gif">
+        </div>
+        <div class="item item-recover-pc">
+          <div class="sample-recovery">
+            <img class="left-img" alt="Point Cloud Input" src="static/images/sample/chair_back_frame_mid_y_offset_pct_0_0000_0002_gt_pc.gif">
+            <span><i class="fa fa-arrow-right"></i></span>
+            <img class="right-img" alt="Prediction from Point Cloud" src="static/images/sample/chair_back_frame_mid_y_offset_pct_0_0000_0002_pred_pc.gif">
+          </div>
+        </div>
+        <div class="item item-recover-sketch">
+          <div class="sample-recovery">
+            <img class="left-img" alt="Sketch Input" src="static/images/sample/chair_back_frame_mid_y_offset_pct_0_0000_0002_-30.0_35.0.png">
+            <span><i class="fa fa-arrow-right"></i></span>
+            <img class="right-img" alt="Prediction from Sketch" src="static/images/sample/chair_back_frame_mid_y_offset_pct_0_0000_0002_-30.0_35.gif">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <!-- Abstract. -->
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Abstract</h2>
+        <div class="content has-text-justified">
+          <p>
+            Mapping high-fidelity 3D geometry to a representation that allows for intuitive edits remains an elusive goal in computer vision and graphics. The key challenge is the need to model both continuous and discrete shape variations. Current approaches, such as implicit shape representation, lack straightforward interpretable encoding, while others that employ procedural methods output coarse geometry.
+            We present <span class="dnerf">GeoCode</span>, a technique for 3D shape synthesis using an intuitively editable parameter space. We build a novel program that enforces a complex set of rules and enables users to perform intuitive and controlled high-level edits that procedurally propagate at a low level to the entire shape. Our program produces high-quality mesh outputs by construction. We use a neural network to map a given point cloud or sketch to our interpretable parameter space. Once produced by our procedural program, shapes can be easily modified. Empirically, we show that <span class="dnerf">GeoCode</span> can infer and recover 3D shapes more accurately compared to existing techniques and we demonstrate its ability to perform controlled local and global shape manipulations.
+          </p>
+        </div>
+      </div>
+    </div>
+    <!--/ Abstract. -->
+
+    <!-- Paper video. -->
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Programs Demo Video</h2>
+        <div class="publicaiton-video">
+          <iframe src="https://www.youtube.com/embed/VDufFcVIOzM?rel=0&amp;showinfo=0"
+                  frameborder="0" scrolling="no" marginheight="0" allow="autoplay; encrypted-media" marginwidth="0" marginheight="0" width="450" height="600" allowfullscreen></iframe>
+        </div>
+      </div>
+    </div>
+    <!--/ Paper video. -->
+  </div>
+</section>
+
+
+<section class="section">
+  <div class="container is-max-desktop">
+
+    <!-- Animation. -->
+    <div class="columns is-centered">
+      <div class="column is-full-width">
+        <h2 class="title is-3">GeoCode System Overview</h2>
+
+        <div class="content has-text-justified">
+          <p>
+            <span class="dnerf">GeoCode</span> learns to map a point cloud or a sketch input to an intuitively editable parameter space. The input passes through the corresponding encoder to obtain an embedding vector which is then fed to a set of decoders that predict the interpretable parameters. The program enforces a set of rules that, given a parameter representation, produces a high-quality shape by construction.
+          </p>
+        </div>
+        <div class="content has-text-centered">
+          <img alt="GeoCode architecture overview" src="static/images/architecture.png">
+        </div>
+      </div>
+    </div>
+    <!--/ Animation. -->
+  </div>
+</section>
+
+
+<section class="section" id="BibTeX">
+  <div class="container is-max-desktop content">
+    <h2 class="title">BibTeX</h2>
+    <pre><code>@article{...,
+  author    = {...},
+  title     = {GeoCode: Interpretable Shape Programs},
+  booktitle = {...},
+  year      = {2022},
+}</code></pre>
+  </div>
+</section>
+
+
+<footer class="footer">
+  <div class="container">
+    <div class="content has-text-centered">
+      <a class="icon-link"
+         href="">
+        <!-- TODO: link -->
+        <i class="fas fa-file-pdf"></i>
+      </a>
+      <a class="icon-link" href="https://github.com/ofekp" class="external-link" disabled>
+        <i class="fab fa-github"></i>
+      </a>
+    </div>
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <div class="content">
+          <p>
+            This website is licensed under a <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">Creative
+            Commons Attribution-ShareAlike 4.0 International License</a>.
+          </p>
+          <p>
+            Parts of the code for this website are reused from the <a href="https://github.com/nerfies/nerfies.github.io">source code</a> contributed by the authors of <a href="https://nerfies.github.io/">Nerfies</a>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
