@@ -152,21 +152,19 @@ def test(opt):
                                           test_dataloaders_types=test_dataloaders_types, test_input_type=opt.input_type,
                                           exp_name=opt.exp_name)
 
-    if True:
-        trainer = pl.Trainer(gpus=1)
-        trainer.test(model=pl_model, dataloaders=test_dataloaders, ckpt_path=best_model_and_highest_epoch)
-
-        # save the validation and test bar-plots as image
-        barplot_target_dir = results_dir.joinpath('barplot')
-        for barplot_type in ['val', 'test']:
-            barplot_json_path = Path(opt.models_dir, opt.exp_name, f'{barplot_type}_barplot_top_1.json')
-            if not barplot_json_path.is_file():
-                print(f"Could not find barplot [{barplot_json_path}] skipping copy")
-                continue
-            barplot_target_image_path = barplot_target_dir.joinpath(f'{barplot_type}_barplot.png')
-            title = "Validation Accuracy" if barplot_type == 'val' else "Test Accuracy"
-            gen_and_save_barplot(barplot_json_path, title, barplot_target_image_path=barplot_target_image_path)
-            shutil.copy(barplot_json_path, barplot_target_dir.joinpath(barplot_json_path.name))
+    trainer = pl.Trainer(gpus=1)
+    trainer.test(model=pl_model, dataloaders=test_dataloaders, ckpt_path=best_model_and_highest_epoch)
+    # save the validation and test bar-plots as image
+    barplot_target_dir = results_dir.joinpath('barplot')
+    for barplot_type in ['val', 'test']:
+        barplot_json_path = Path(opt.models_dir, opt.exp_name, f'{barplot_type}_barplot_top_1.json')
+        if not barplot_json_path.is_file():
+            print(f"Could not find barplot [{barplot_json_path}] skipping copy")
+            continue
+        barplot_target_image_path = barplot_target_dir.joinpath(f'{barplot_type}_barplot.png')
+        title = "Validation Accuracy" if barplot_type == 'val' else "Test Accuracy"
+        gen_and_save_barplot(barplot_json_path, title, barplot_target_image_path=barplot_target_image_path)
+        shutil.copy(barplot_json_path, barplot_target_dir.joinpath(barplot_json_path.name))
 
     gt_dir = results_dir.joinpath('yml_gt')
     model_predictions_pc_dir = results_dir.joinpath('yml_predictions_pc')
@@ -180,84 +178,80 @@ def test(opt):
 
     # create all the obj from the prediction yaml files
     # note that for pc we have one yml and for sketch we have multiple yml files (one for each camera angle)
-    if True:
-        cpu_count = multiprocessing.cpu_count()
-        print(f"Converting yml files to obj files using [{cpu_count}] processes")
-        for yml_dir, out_dir in [(gt_dir, 'obj_gt'), (model_predictions_pc_dir, 'obj_predictions_pc'), (model_predictions_sketch_dir, 'obj_predictions_sketch')]:
-            try:
-                # for each gt obj file we might have multiple yml files as predictions, like for the sketches
-                yml_files = sorted(yml_dir.glob("*.yml"))
-                # filter out existing
-                yml_files_filtered = [yml_file for yml_file in yml_files if not results_dir.joinpath(out_dir, f'{yml_file.stem}.obj').is_file()]
-                if out_dir == 'obj_gt' and not yml_files:
-                    # COSEG (or any external ds for which we do not have ground truth yml files)
-                    for obj_file in test_dir_obj_gt.glob("*.obj"):
-                        print(f"shutil [{obj_file}]")
-                        shutil.copy(obj_file, str(Path(results_dir, out_dir, f"{obj_file.stem}_gt.obj")))
-                    continue
-                save_as_obj_proc_partial = partial(save_as_obj_proc,
-                                                   recipe_file_path=recipe_file_path,
-                                                   results_dir=results_dir,
-                                                   out_dir=out_dir,
-                                                   blender_exe=opt.blender_exe,
-                                                   blend_file=opt.blend_file)
-                p = multiprocessing.Pool(cpu_count)
-                p.map(save_as_obj_proc_partial, yml_files_filtered)
-                p.close()
-                p.join()
-            except Exception as e:
-                print(traceback.format_exc())
-                print(repr(e))
-        print("Done converting yml files to obj files")
+    cpu_count = multiprocessing.cpu_count()
+    print(f"Converting yml files to obj files using [{cpu_count}] processes")
+    for yml_dir, out_dir in [(gt_dir, 'obj_gt'), (model_predictions_pc_dir, 'obj_predictions_pc'), (model_predictions_sketch_dir, 'obj_predictions_sketch')]:
+        try:
+            # for each gt obj file we might have multiple yml files as predictions, like for the sketches
+            yml_files = sorted(yml_dir.glob("*.yml"))
+            # filter out existing
+            yml_files_filtered = [yml_file for yml_file in yml_files if not results_dir.joinpath(out_dir, f'{yml_file.stem}.obj').is_file()]
+            if out_dir == 'obj_gt' and not yml_files:
+                # COSEG (or any external ds for which we do not have ground truth yml files)
+                for obj_file in test_dir_obj_gt.glob("*.obj"):
+                    print(f"shutil [{obj_file}]")
+                    shutil.copy(obj_file, str(Path(results_dir, out_dir, f"{obj_file.stem}_gt.obj")))
+                continue
+            save_as_obj_proc_partial = partial(save_as_obj_proc,
+                                               recipe_file_path=recipe_file_path,
+                                               results_dir=results_dir,
+                                               out_dir=out_dir,
+                                               blender_exe=opt.blender_exe,
+                                               blend_file=opt.blend_file)
+            p = multiprocessing.Pool(cpu_count)
+            p.map(save_as_obj_proc_partial, yml_files_filtered)
+            p.close()
+            p.join()
+        except Exception as e:
+            print(traceback.format_exc())
+            print(repr(e))
+    print("Done converting yml files to obj files")
 
-    if True:
-        print("Calculating Chamfer Distances...")
-        num_points_in_pc_for_chamfer = 10000
-        chamfer_json = {'pc': {}, 'sketch': {}}
-        chamfer_summary_json = {'pc': {'chamfer_sum': 0.0, 'num_samples': 0}, 'sketch': {'chamfer_sum': 0.0, 'num_samples': 0}}
+    print("Calculating Chamfer Distances...")
+    num_points_in_pc_for_chamfer = 10000
+    chamfer_json = {'pc': {}, 'sketch': {}}
+    chamfer_summary_json = {'pc': {'chamfer_sum': 0.0, 'num_samples': 0}, 'sketch': {'chamfer_sum': 0.0, 'num_samples': 0}}
+    for file_idx, file_name in enumerate(file_names): # for each unique test object
+        # get ground truth point cloud (uniform)
+        gt_file_name = file_name
+        if "_decimate_ratio_0" in file_name:
+            # edge case for comparing on the decimated ds
+            gt_file_name = gt_file_name.replace("_decimate_ratio_0_100", "_decimate_ratio_1_000")
+            gt_file_name = gt_file_name.replace("_decimate_ratio_0_010", "_decimate_ratio_1_000")
+            gt_file_name = gt_file_name.replace("_decimate_ratio_0_005", "_decimate_ratio_1_000")
+        assert "_decimate_ratio_0_100" not in gt_file_name
+        assert "_decimate_ratio_0_010" not in gt_file_name
+        assert "_decimate_ratio_0_005" not in gt_file_name
 
-        for file_idx, file_name in enumerate(file_names): # for each unique test object
-            # get ground truth point cloud (uniform)
-            gt_file_name = file_name
-            if "_decimate_ratio_0" in file_name:
-                # edge case for comparing on the decimated ds
-                gt_file_name = gt_file_name.replace("_decimate_ratio_0_100", "_decimate_ratio_1_000")
-                gt_file_name = gt_file_name.replace("_decimate_ratio_0_010", "_decimate_ratio_1_000")
-                gt_file_name = gt_file_name.replace("_decimate_ratio_0_005", "_decimate_ratio_1_000")
-            assert "_decimate_ratio_0_100" not in gt_file_name
-            assert "_decimate_ratio_0_010" not in gt_file_name
-            assert "_decimate_ratio_0_005" not in gt_file_name
+        if opt.scanobjectnn:
+            random_pc_path = random_pc_dir.joinpath(f"{file_name}_0.npy")
+            gt_pc = np.load(str(random_pc_path))
+            gt_pc = torch.from_numpy(gt_pc).float()
+            num_points_in_pc_for_chamfer = 2048
+        else:
+            gt_pc = sample_pc_random(results_dir.joinpath('obj_gt',f'{file_name}_gt.obj'),
+                                     num_points=num_points_in_pc_for_chamfer,
+                                     apply_point_cloud_normalization=opt.normalize_pc)
 
-            if opt.scanobjectnn:
-                random_pc_path = random_pc_dir.joinpath(f"{file_name}_0.npy")
-                gt_pc = np.load(str(random_pc_path))
-                gt_pc = torch.from_numpy(gt_pc).float()
-                num_points_in_pc_for_chamfer = 2048
-            else:
-                gt_pc = sample_pc_random(results_dir.joinpath('obj_gt',f'{file_name}_gt.obj'),
-                                         num_points=num_points_in_pc_for_chamfer,
-                                         apply_point_cloud_normalization=opt.normalize_pc)
+        for input_type, model_prediction_dir in [('pc', model_predictions_pc_dir), ('sketch', model_predictions_sketch_dir)]:
+            yml_files = sorted(model_prediction_dir.glob(f"{file_name}_*.yml"))
+            for yml_file in yml_files:
+                yml_file_base_name_no_ext = yml_file.stem
+                target_pc = sample_pc_random(results_dir.joinpath(f'obj_predictions_{input_type}', f'{yml_file_base_name_no_ext}.obj'),
+                                             num_points=num_points_in_pc_for_chamfer,
+                                             apply_point_cloud_normalization=opt.normalize_pc)
+                chamf_distance = get_chamfer_distance(target_pc, gt_pc, device, num_points_in_pc_for_chamfer, check_rot=(input_type == 'sketch'))
+                chamfer_summary_json[input_type]['chamfer_sum'] += chamf_distance.item()
+                chamfer_summary_json[input_type]['num_samples'] += 1
+                chamfer_json[input_type][yml_file_base_name_no_ext] = chamf_distance.item()
 
-            for input_type, model_prediction_dir in [('pc', model_predictions_pc_dir), ('sketch', model_predictions_sketch_dir)]:
-                yml_files = sorted(model_prediction_dir.glob(f"{file_name}_*.yml"))
-                for yml_file in yml_files:
-                    yml_file_base_name_no_ext = yml_file.stem
-                    target_pc = sample_pc_random(results_dir.joinpath(f'obj_predictions_{input_type}', f'{yml_file_base_name_no_ext}.obj'),
-                                                 num_points=num_points_in_pc_for_chamfer,
-                                                 apply_point_cloud_normalization=opt.normalize_pc)
-                    chamf_distance = get_chamfer_distance(target_pc, gt_pc, device, num_points_in_pc_for_chamfer, check_rot=(input_type == 'sketch'))
-                    chamfer_summary_json[input_type]['chamfer_sum'] += chamf_distance.item()
-                    chamfer_summary_json[input_type]['num_samples'] += 1
-                    chamfer_json[input_type][yml_file_base_name_no_ext] = chamf_distance.item()
+    # compute overall average
+    if chamfer_summary_json['pc']['num_samples'] > 0:
+        chamfer_json['pc']['avg'] = chamfer_summary_json['pc']['chamfer_sum'] / chamfer_summary_json['pc']['num_samples']
+    if chamfer_summary_json['sketch']['num_samples'] > 0:
+        chamfer_json['sketch']['avg'] = chamfer_summary_json['sketch']['chamfer_sum'] / chamfer_summary_json['sketch']['num_samples']
 
-        # compute overall average
-        if chamfer_summary_json['pc']['num_samples'] > 0:
-            chamfer_json['pc']['avg'] = chamfer_summary_json['pc']['chamfer_sum'] / chamfer_summary_json['pc']['num_samples']
-        if chamfer_summary_json['sketch']['num_samples'] > 0:
-            chamfer_json['sketch']['avg'] = chamfer_summary_json['sketch']['chamfer_sum'] / chamfer_summary_json['sketch']['num_samples']
-
-        # save chamfer json to the results dir
-        with open(results_dir.joinpath("chamfer.json"), "w") as outfile:
-            json.dump(chamfer_json, outfile)
-
-        print("Done calculating Chamfer Distances")
+    # save chamfer json to the results dir
+    with open(results_dir.joinpath("chamfer.json"), "w") as outfile:
+        json.dump(chamfer_json, outfile)
+    print("Done calculating Chamfer Distances")
