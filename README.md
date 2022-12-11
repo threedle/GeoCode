@@ -9,7 +9,7 @@
 ## Requirements
 - Python 3.8
 - CUDA 11.8
-- GPU, minimum 8 GB ram (TODO: find min RAM size)
+- GPU, minimum 8 GB ram
 - During training, a machine with 5 CPUs is recommended 
 - During _visualization_ and _sketch generation_, we recommend a setup with multiple GPU nodes, refer to the additional information to run in parallel on all available nodes
 - During test-set evaluation, generation of raw shapes for a new dataset, and during _stability metric_ evaluation, a single node with 20 CPU is recommended
@@ -17,7 +17,7 @@
 ## Running the test-set evaluation using our dataset and saved checkpoint
 
 <div style="text-align: center">
-<img src="resources/sample/chair_back_frame_mid_y_offset_pct_0_0000_0002.png" alt="3D shape recovery" height="270"/>
+<img src="resources/sample/chair_back_frame_mid_y_offset_pct_0_0000_0002.png" alt="3D shape recovery" height="250"/>
 </div>
 
 ### Installation
