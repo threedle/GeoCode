@@ -1,6 +1,6 @@
 # GeoCode: Interpretable Shape Programs
 
-*[Ofek Pearl](https://github.com/ofekp), [Itai Lang](https://github.com/itailang), [Yuhua Hu](https://yuhuahu310.github.io/), [Raymond A. Yeh](https://raymond-yeh.com/), [Rana Hanocka](https://people.cs.uchicago.edu/~ranahanocka/)*
+*[Ofek Pearl](https://github.com/ofekp), [Itai Lang](https://scholar.google.com/citations?user=q0bBhtsAAAAJ), [Yuhua Hu](https://yuhuahu310.github.io/), [Raymond A. Yeh](https://raymond-yeh.com/), [Rana Hanocka](https://people.cs.uchicago.edu/~ranahanocka/)*
 
 ![alt GeoCode](resources/teaser.png)
 
@@ -12,7 +12,7 @@
 - GPU, minimum 8 GB ram
 - During training, a machine with 5 CPUs is recommended 
 - During _visualization_ and _sketch generation_, we recommend a setup with multiple GPU nodes, refer to the additional information to run in parallel on all available nodes
-- During test-set evaluation, generation of raw shapes for a new dataset, and during _stability metric_ evaluation, a single node with 20 CPU is recommended
+- During test-set evaluation, generation of raw shapes for a new dataset, and during _stability metric_ evaluation, a single node with 20 CPUs is recommended
 
 ## Running the test-set evaluation using our dataset and saved checkpoint
 
@@ -39,7 +39,7 @@ python scripts/download_ds.py --domain chair --datasets-dir ~/datasets --models-
 
 `vase` and `table` domains are also available
 
-### Run the test for the chair domain (1 GPU and 20 CPU setup is recommended)
+### Run the test for the chair domain (1 GPU and 20 CPUs setup is recommended)
 
 Run the test for the `chair` domain using the downloaded checkpoint, make sure the directories match the directories that were used in the `download_ds.py` step
 ```bash
@@ -83,7 +83,7 @@ this will generate the following additional directories under `resutls_exp_geoco
             └───render_predictions_sketch  <-- renders of the objects predicted from sketch input
 ```
 
-## Run training on our dataset (1 GPU and 5 cpus setup is recommended)
+## Run training on our dataset (1 GPU and 5 CPUs setup is recommended)
 
 Training from a checkpoint or new training is done similarly, and only depends on the existence of a `latest.ckpt` checkpoint file in the experiment directory (under `~/models` in this example).
 Please note that training using our checkpoints will show a starting epoch of 0.
