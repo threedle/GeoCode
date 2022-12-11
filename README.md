@@ -17,7 +17,7 @@
 ## Running the test-set evaluation using our dataset and saved checkpoint
 
 <div style="text-align: center">
-<img src="resources/sample/chair_back_frame_mid_y_offset_pct_0_0000_0002.png" alt="3D shape recovery" height="250"/>
+<img src="resources/chair_back_frame_mid_y_offset_pct_0_0000_0002.png" alt="3D shape recovery"/>
 </div>
 
 ### Installation
