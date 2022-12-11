@@ -1,0 +1,208 @@
+base:
+  body_height: 1.2143
+  body_width: 0.2944
+  body_bottom_curve_width: 0.0
+  body_bottom_curve_height: 0.6
+  body_mouth_width: 0.6
+  body_top_curve_width: 0.2
+  body_top_curve_height: 0.9
+  body_profile_blend: 0.8
+  has_body_thickness: 0
+  body_thickness_val: 0.05999999865889549
+  handle_count: 5
+  hndl_type: 2
+  hndl_profile_width: 1.0
+  hndl_profile_height: 0.2
+  hndl_profile_blend: 0.8
+  hndl_base_z: 0.4699999988079071
+  hndl_base_bezier_handle_angle: 0.4
+  hndl_base_bezier_handle_length: 0.2
+  hndl_radius_along_path: 0.0
+  hndl1_top_z: 0.5
+  hndl1_end_bezier_handle_angle: 0.2
+  hndl1_end_bezier_handle_length: 0.6
+  hndl2_end_x: 0.0
+  hndl2_end_z: 0.4099999964237213
+  hndl2_end_bezier_handle_x: 0.0
+  hndl2_end_bezier_handle_z: 0.2
+  has_neck: 1
+  neck_end_x: 0.8
+  neck_end_z: 0.8
+  neck_end_bezier_handle_x: 0.8
+  neck_end_bezier_handle_z: 0.0
+  has_base: 1
+  base_start_x: 0.7
+  base_start_z: 0.6
+  base_mid_x: 0.2
+  base_mid_z: 0.8
+  has_lid: 0
+  has_lid_handle: 1
+  lid_handle_radius: 0.02
+dataset_generation:
+  body_height:
+    min: 0.5
+    max: 1.5
+    samples: 15
+  body_width:
+    min: 0.1
+    max: 0.45
+    samples: 10
+  body_bottom_curve_width:
+    min: 0.0
+    max: 1.0
+    samples: 11
+  body_bottom_curve_height:
+    min: 0.1
+    max: 0.9
+    samples: 9
+  body_mouth_width:
+    min: 0.0
+    max: 0.7
+    samples: 8
+  body_top_curve_width:
+    min: 0.0
+    max: 0.9
+    samples: 10
+  body_top_curve_height:
+    min: 0.1
+    max: 0.9
+    samples: 9
+  body_profile_blend:
+    min: 0.0
+    max: 1.0
+    samples: 11
+  has_body_thickness:
+    min: 0
+    max: 1
+  body_thickness_val:
+    min: 0.01
+    max: 0.07
+    samples: 7
+  handle_count:
+    min: 0
+    max: 6
+  hndl_type:
+    min: 1
+    max: 2
+  hndl_profile_width:
+    min: 0.0
+    max: 1.0
+    samples: 6
+  hndl_profile_height:
+    min: 0.0
+    max: 1.0
+    samples: 6
+  hndl_profile_blend:
+    min: 0.0
+    max: 1.0
+    samples: 6
+  hndl_base_z:
+    min: 0.1
+    max: 0.6
+    samples: 6
+  hndl_base_bezier_handle_angle:
+    min: 0.0
+    max: 1.0
+    samples: 11
+  hndl_base_bezier_handle_length:
+    min: 0.0
+    max: 1.0
+    samples: 6
+  hndl_radius_along_path:
+    min: 0.0
+    max: 1.0
+    samples: 11
+  hndl1_top_z:
+    min: 0.2
+    max: 0.8
+    samples: 7
+  hndl1_end_bezier_handle_angle:
+    min: 0.0
+    max: 1.0
+    samples: 11
+  hndl1_end_bezier_handle_length:
+    min: 0.0
+    max: 1.0
+    samples: 6
+  hndl2_end_x:
+    min: 0.0
+    max: 1.0
+    samples: 11
+  hndl2_end_z:
+    min: 0.0
+    max: 1.0
+    samples: 11
+  hndl2_end_bezier_handle_x:
+    min: 0.0
+    max: 1.0
+    samples: 11
+  hndl2_end_bezier_handle_z:
+    min: 0.1
+    max: 1.0
+    samples: 10
+  has_neck:
+    min: 0
+    max: 1
+  neck_end_x:
+    min: 0.1
+    max: 1.0
+    samples: 10
+  neck_end_z:
+    min: 0.0
+    max: 1.0
+    samples: 11
+  neck_end_bezier_handle_x:
+    min: 0.0
+    max: 1.0
+    samples: 11
+  neck_end_bezier_handle_z:
+    min: 0.0
+    max: 1.0
+    samples: 11
+  has_base:
+    min: 0
+    max: 1
+  base_start_x:
+    min: 0.0
+    max: 1.0
+    samples: 11
+  base_start_z:
+    min: 0.0
+    max: 1.0
+    samples: 6
+  base_mid_x:
+    min: 0.0
+    max: 1.0
+    samples: 11
+  base_mid_z:
+    min: 0.0
+    max: 1.0
+    samples: 6
+  has_lid:
+    min: 0
+    max: 1
+  has_lid_handle:
+    min: 0
+    max: 1
+  lid_handle_radius:
+    min: 0.02
+    max: 0.07
+    samples: 6
+visibility_conditions:
+  body_thickness_val: has_body_thickness and not has_lid
+  hndl_: handle_count > 0
+  hndl1_: handle_count > 0 and hndl_type == 1
+  hndl2_: handle_count > 0 and hndl_type == 2
+  neck_: has_neck
+  base_start_: has_base
+  base_mid_: has_base
+  has_lid_handle: has_lid
+  lid_handle_radius: has_lid and has_lid_handle
+camera_angles_train:
+- - -30.0
+  - 35.0
+- - -30.0
+  - 55.0
+camera_angles_test:
+- - -30.0
+  - 15.0

@@ -1,0 +1,3 @@
+neptune:
+  api_token = "<BASE64 TOKEN STRING>"
+  project = "project_dir/project_name"

@@ -1,0 +1,29 @@
+name: geocode
+channels:
+  - pytorch
+  - defaults
+  - dglteam
+  - bottler
+  - conda-forge
+  - fvcore
+  - iopath
+  - pytorch3d
+dependencies:
+  - python=3.8
+  - pytorch=1.10.2
+  - torchvision
+  - numpy=1.21.2
+  - matplotlib=3.5.1
+  - pytorch-lightning=1.5.10
+  - neptune-client=0.16.4
+  - nvidiacub=1.10.0
+  - dgl=0.9.1
+  - scikit-image=0.19.2
+  - iopath=0.1.9
+  - fvcore=0.1.5.post20210915
+  - tqdm>=4.64.0
+  - gdown>=4.5.4
+  - pytorch3d
+  - pip
+  - pip:
+    - git+https://github.com/otaheri/chamfer_distance
