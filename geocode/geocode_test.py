@@ -47,13 +47,13 @@ def get_chamfer_distance(target_pc, gt_pc, device, num_points_in_pc, check_rot=F
     """
     gt_pc = gt_pc.reshape(1, gt_pc.shape[0], gt_pc.shape[1])  # add batch dim
     target_pc = target_pc.reshape(1, target_pc.shape[0], target_pc.shape[1])  # add batch dim
-    assert gt_pc.shape[1] == target_pc.shape[1] == num_points_in_pc
-    dist1, dist2, idx1, idx2 = chamfer_dist(target_pc.float().to(device), gt_pc.float().to(device))
+    assert gt_pc.shape[1] == target_pc.shape[1] == num_points_in_pc, f"{gt_pc.shape[1]} == {target_pc.shape[1]} == {num_points_in_pc}"
+    dist1, dist2, idx1, idx2 = chamfer_dist()(target_pc.float().to(device), gt_pc.float().to(device))
     chamfer_distance = (torch.sum(dist1) + torch.sum(dist2)) / (gt_pc.shape[1] * 2)
     if check_rot:
         rot_mat = torch.tensor([[0.0, 0.0, -1.0], [0.0, 1.0, 0.0], [1.0, 0.0, 0.0]], dtype=torch.float64)
         target_pc_rot = torch.matmul(rot_mat, target_pc.squeeze().t()).t().unsqueeze(0)
-        dist1, dist2, idx1, idx2 = chamfer_dist(target_pc_rot.float().to(device), gt_pc.float().to(device))
+        dist1, dist2, idx1, idx2 = chamfer_dist()(target_pc_rot.float().to(device), gt_pc.float().to(device))
         chamfer_distance_rot = (torch.sum(dist1) + torch.sum(dist2)) / (gt_pc.shape[1] * 2)
         return torch.min(chamfer_distance, chamfer_distance_rot)
     return chamfer_distance
@@ -211,6 +211,7 @@ def test(opt):
         print("Done converting yml files to obj files")
 
     if True:
+        print("Calculating Chamfer Distances...")
         num_points_in_pc_for_chamfer = 10000
         chamfer_json = {'pc': {}, 'sketch': {}}
         chamfer_summary_json = {'pc': {'chamfer_sum': 0.0, 'num_samples': 0}, 'sketch': {'chamfer_sum': 0.0, 'num_samples': 0}}
@@ -259,4 +260,4 @@ def test(opt):
         with open(results_dir.joinpath("chamfer.json"), "w") as outfile:
             json.dump(chamfer_json, outfile)
 
-        print("Done calculating Chamfer distances")
+        print("Done calculating Chamfer Distances")

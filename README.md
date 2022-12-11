@@ -91,7 +91,7 @@ Please note that training using our checkpoints will show a starting epoch of 0.
 ```bash
 cd GeoCode
 conda activate geocode
-python geocode/geocode.py train --models-dir ~/models --dataset-dir ~/datasets --nepoch=600 --batch_size=33 --input-type pc sketch --exp-name exp_geocode_chair
+python geocode/geocode.py train --models-dir ~/models --dataset-dir ~/datasets/ChairDataset --nepoch=600 --batch_size=33 --input-type pc sketch --exp-name exp_geocode_chair
 ```
 
 ## Inspecting the blend files

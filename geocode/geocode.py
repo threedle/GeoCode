@@ -45,8 +45,8 @@ def main():
     sp_test.add_argument('--blend-file', type=str, required=True, help='Path to blend file')
     sp_test.add_argument('--random-pc', type=int, default=None, help='Use only random point cloud sampling with specified number of points')
     sp_test.add_argument('--gaussian', type=float, default=0.0, help='Add Gaussian noise to the point cloud with the specified STD')
-    sp_test.add_argument('--normalize-pc', action='store_true', default='False', help='Automatically normalize the input point clouds')
-    sp_test.add_argument('--scanobjectnn', action='store_true', default='False', help='ScanObjectNN dataset which has only point clouds input')
+    sp_test.add_argument('--normalize-pc', action='store_true', default=False, help='Automatically normalize the input point clouds')
+    sp_test.add_argument('--scanobjectnn', action='store_true', default=False, help='ScanObjectNN dataset which has only point clouds input')
     # we augment in phases "train", "val", "test" and experiments "coseg", "simplify_mesh", and "gaussian"
     # use `--augment-with-random-points false` to disable
     sp_test.add_argument('--augment-with-random-points', type=str2bool, default='True', help='Augment FPS point cloud with randomly sampled points')
