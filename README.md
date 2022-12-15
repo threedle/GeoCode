@@ -1,4 +1,4 @@
-# GeoCode: Interpretable Shape Programs [[Project Page](https://threedle.github.io/GeoCode/)]
+# GeoCode: Interpretable Shape Programs [[Project Page](https://threedle.github.io/GeoCode/)] [[Paper](https://drive.google.com/file/d/1I0aRl9kZtqV-pGgfGfNIZdOfgfC_Aiwx)]
 
 *[Ofek Pearl](https://github.com/ofekp), [Itai Lang](https://scholar.google.com/citations?user=q0bBhtsAAAAJ), [Yuhua Hu](https://yuhuahu310.github.io/), [Raymond A. Yeh](https://raymond-yeh.com/), [Rana Hanocka](https://people.cs.uchicago.edu/~ranahanocka/)*
 
