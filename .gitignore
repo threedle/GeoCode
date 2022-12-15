@@ -1,4 +1,6 @@
 additional/
+common/
+dataset_generator/
 _site
 .sass-cache
 .jekyll-cache
