@@ -7,6 +7,14 @@
 
 > We present GeoCode, a technique for 3D shape synthesis using an intuitively editable parameter space. We build a novel program that enforces a complex set of rules and enables users to perform intuitive and controlled high-level edits that procedurally propagate at a low level to the entire shape. Our program produces high-quality mesh outputs by construction. We use a neural network to map a given point cloud or sketch to our interpretable parameter space. Once produced by our procedural program, shapes can be easily modified. Empirically, we show that GeoCode can infer and recover 3D shapes more accurately compared to existing techniques and we demonstrate its ability to perform controlled local and global shape manipulations.
 
+<div style="text-align: center">
+<img src="https://github.com/threedle/GeoCode/releases/download/v.1.0.0/demo_video_chair.gif" width=300 alt="3D shape recovery"/>
+<img src="https://github.com/threedle/GeoCode/releases/download/v.1.0.0/demo_video_vase.gif" width=300 alt="3D shape recovery"/>
+<p>
+A demo video of our programs is available <a href="https://www.youtube.com/watch?v=VDufFcVIOzM">here</a> or at our <a href="https://threedle.github.io/GeoCode/">project's page</a>.
+</div>
+
+
 ## Requirements
 - Python 3.8
 - CUDA 11.8
