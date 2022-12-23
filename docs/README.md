@@ -5,11 +5,10 @@ This is the repository that contains source code for the [GeoCode website](https
 If you found GeoCode useful, please cite in your work:
 ```
 @article{pearl2022geocode,
-  author    = {Pearl, Ofek and Lang, Itai and Hu, Yuhua and Yeh, Raymond A. and Hanocka, Rana},
-  title     = {GeoCode: Interpretable Shape Programs},
-  journal   = {arXiv},
-  eprint    = {2212.11715},
-  year      = {2022}
+  title={GeoCode: Interpretable Shape Programs},
+  author={Pearl, Ofek and Lang, Itai and Hu, Yuhua and Yeh, Raymond A. and Hanocka, Rana},
+  booktitle={arXiv preprint arxiv:2212.11715},
+  year={2022}
 }
 ```
 
