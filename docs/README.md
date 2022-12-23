@@ -7,8 +7,8 @@ If you found GeoCode useful, please cite in your work:
 @article{pearl2022geocode,
   author    = {Pearl, Ofek and Lang, Itai and Hu, Yuhua and Yeh, Raymond A. and Hanocka, Rana},
   title     = {GeoCode: Interpretable Shape Programs},
-  booktitle = {arXiv},
-  month     = {December},
+  journal   = {arXiv},
+  eprint    = {2212.11715},
   year      = {2022}
 }
 ```
