@@ -275,10 +275,9 @@ scripts/download_ds_processing_scripts.py
 # Citation
 ```
 @article{pearl2022geocode,
-  author    = {Pearl, Ofek and Lang, Itai and Hu, Yuhua and Yeh, Raymond A. and Hanocka, Rana},
-  title     = {GeoCode: Interpretable Shape Programs},
-  journal   = {arXiv},
-  eprint    = {2212.11715},
-  year      = {2022}
+  title={GeoCode: Interpretable Shape Programs},
+  author={Pearl, Ofek and Lang, Itai and Hu, Yuhua and Yeh, Raymond A. and Hanocka, Rana},
+  booktitle={arXiv preprint arxiv:2212.11715},
+  year={2022}
 }
 ```
