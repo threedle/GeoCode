@@ -12,7 +12,7 @@
 <img src="https://github.com/threedle/GeoCode/releases/download/v.1.0.0/demo_video_vase.gif" width=300 alt="3D shape recovery"/>
 </p>
 <p align="center">
-A demo video of our programs is available <a href="https://www.youtube.com/watch?v=VDufFcVIOzM">here</a> or at our <a href="https://threedle.github.io/GeoCode/">project's page</a>.
+A demo video of our program is available on our <a href="https://threedle.github.io/GeoCode/">project page</a>.
 </p>
 
 
