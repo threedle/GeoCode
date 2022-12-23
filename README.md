@@ -107,6 +107,7 @@ Then you will see the following screen
 
 ![alt GeoCode](resources/geo_nodes_workspace.png)
 
+
 # Additional Information
 
 ## Logging
@@ -261,3 +262,14 @@ scripts/download_ds_processing_scripts.py
 - `scripts` - contains script to set up our datasets and saved checkpoints 
 - `stability_metric` - script to evaluate a tested phase using our *stability metric*
 - `visualize_results` - script to generate the renders for all ground truth and predicted shapes
+
+# Citation
+```
+@article{pearl2022geocode,
+  author    = {Pearl, Ofek and Lang, Itai and Hu, Yuhua and Yeh, Raymond A. and Hanocka, Rana},
+  title     = {GeoCode: Interpretable Shape Programs},
+  booktitle = {arXiv},
+  month     = {December},
+  year      = {2022}
+}
+```
