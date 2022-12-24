@@ -227,7 +227,44 @@
 <section class="section">
   <div class="container is-max-desktop">
 
-    <!-- Animation. -->
+    <!-- Structural integrity -->
+    <div class="columns is-centered">
+      <div class="column is-full-width">
+        <h2 class="title is-3">Our Shape Program</h2>
+
+        <div class="content has-text-justified">
+          <p>
+            We build a novel program that enforces a complex set of rules and enables users to perform intuitive and controlled high-level edits that procedurally propagate at a low-level to the entire shape. In our program, changing a  human-interpretable parameter produces a set of low-level instructions which ensure the modified shape is structurally valid. Our program produces a high-quality and intuitively editable 3D mesh by construction.
+          </p>
+          <p>
+            For example, given the input shape (left), modifying the seat in isolation will lead to an undesirable result (middle). Our program (right) properly propagates the edit to the remainder of the shape.
+          </p>
+        </div>
+        <div class="content has-text-centered">
+          <img alt="GeoCode architecture overview" src="static/images/structural_integrity.png">
+        </div>
+      </div>
+    </div>
+    <!--/ Structural integrity -->
+
+    <!-- Procedural shape construction -->
+    <div class="columns is-centered">
+      <div class="column is-full-width">
+        <h2 class="title is-3">Procedural Shape Construction</h2>
+
+        <div class="content has-text-justified">
+          <p>
+            Our program is implemented as a directed acyclic graph (DAG) comprised of operation nodes and edges. Selected operation nodes are parameterized by the input parameters, allowing the user to interact with the program and control the resulting shape. The operations are chained together, receive, process and then pass the information along their edges, and model shape elements and inter-part influences. The program has a single final node, which outputs a mesh.
+          </p>
+        </div>
+        <div class="content has-text-centered">
+          <img alt="GeoCode architecture overview" src="static/images/program_inside_look.png">
+        </div>
+      </div>
+    </div>
+    <!--/ Procedural shape construction -->
+
+    <!-- System overview -->
     <div class="columns is-centered">
       <div class="column is-full-width">
         <h2 class="title is-3">GeoCode System Overview</h2>
@@ -242,7 +279,7 @@
         </div>
       </div>
     </div>
-    <!--/ Animation. -->
+    <!--/ System overview -->
   </div>
 </section>
 
