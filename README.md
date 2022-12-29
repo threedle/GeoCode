@@ -66,7 +66,7 @@ This will generate the results in the following directory structure, in
     │
     └───test
         │
-        └───resutls_exp_geocode_chair
+        └───results_exp_geocode_chair
             │
             └───barplot                    <-- model accuracy graph
             └───obj_gt                     <-- 3D objects of the ground truth samples
@@ -85,7 +85,7 @@ conda activate geocode
 ~/Blender/blender-3.2.0-linux-x64/blender ~/blends/procedural_chair.blend -b --python visualize_results/visualize.py -- --dataset-dir ~/datasets --dataset-name ChairDataset --phase test --exp-name exp_geocode_chair
 ```
 
-this will generate the following additional directories under `resutls_exp_geocode_chair`:
+this will generate the following additional directories under `results_exp_geocode_chair`:
 ```
             ⋮
             └───render_gt                  <-- renders of the ground truth objects
