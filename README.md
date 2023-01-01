@@ -10,6 +10,7 @@
 <p align="center">
 <img src="https://github.com/threedle/GeoCode/releases/download/v.1.0.0/demo_video_chair.gif" width=300 alt="3D shape recovery"/>
 <img src="https://github.com/threedle/GeoCode/releases/download/v.1.0.0/demo_video_vase.gif" width=300 alt="3D shape recovery"/>
+<img src="https://github.com/threedle/GeoCode/releases/download/v.1.0.0/demo_video_table.gif" width=300 alt="3D shape recovery"/>
 </p>
 <p align="center">
 A demo video of our program is available on our <a href="https://threedle.github.io/GeoCode/">project page</a>.
