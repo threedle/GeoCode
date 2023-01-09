@@ -8,9 +8,9 @@
 > We present GeoCode, a technique for 3D shape synthesis using an intuitively editable parameter space. We build a novel program that enforces a complex set of rules and enables users to perform intuitive and controlled high-level edits that procedurally propagate at a low level to the entire shape. Our program produces high-quality mesh outputs by construction. We use a neural network to map a given point cloud or sketch to our interpretable parameter space. Once produced by our procedural program, shapes can be easily modified. Empirically, we show that GeoCode can infer and recover 3D shapes more accurately compared to existing techniques and we demonstrate its ability to perform controlled local and global shape manipulations.
 
 <p align="center">
-<img src="https://github.com/threedle/GeoCode/releases/download/v.1.0.0/demo_video_chair.gif" width=300 alt="3D shape recovery"/>
-<img src="https://github.com/threedle/GeoCode/releases/download/v.1.0.0/demo_video_vase.gif" width=300 alt="3D shape recovery"/>
-<img src="https://github.com/threedle/GeoCode/releases/download/v.1.0.0/demo_video_table.gif" width=300 alt="3D shape recovery"/>
+<img src="https://github.com/threedle/GeoCode/releases/download/v.1.0.0/demo_video_chair.gif" width=250 alt="3D shape recovery"/>
+<img src="https://github.com/threedle/GeoCode/releases/download/v.1.0.0/demo_video_vase.gif" width=250 alt="3D shape recovery"/>
+<img src="https://github.com/threedle/GeoCode/releases/download/v.1.0.0/demo_video_table.gif" width=250 alt="3D shape recovery"/>
 </p>
 <p align="center">
 A demo video of our program is available on our <a href="https://threedle.github.io/GeoCode/">project page</a>.
@@ -83,7 +83,7 @@ We also provide a way to automatically render the resulting 3D objects. Please n
 ```bash
 cd GeoCode
 conda activate geocode
-~/Blender/blender-3.2.0-linux-x64/blender ~/blends/procedural_chair.blend -b --python visualize_results/visualize.py -- --dataset-dir ~/datasets --dataset-name ChairDataset --phase test --exp-name exp_geocode_chair
+~/Blender/blender-3.2.0-linux-x64/blender ~/blends/procedural_chair.blend -b --python visualize_results/visualize.py -- --dataset-dir ~/datasets/ChairDataset --phase test --exp-name exp_geocode_chair
 ```
 
 this will generate the following additional directories under `results_exp_geocode_chair`:
@@ -185,7 +185,7 @@ To do so, simply add the flags `--parallel 10 --mod $NODE_ID` to the visualizati
 ```bash
 cd GeoCode
 conda activate geocode
-~/Blender/blender-3.2.0-linux-x64/blender ~/blends/procedural_chair.blend -b --python visualize_results/visualize.py -- --dataset-dir ~/datasets --dataset-name ChairDataset --phase test --exp-name exp_geocode_chair --parallel 10 --mod $NODE_ID
+~/Blender/blender-3.2.0-linux-x64/blender ~/blends/procedural_chair.blend -b --python visualize_results/visualize.py -- --dataset-dir ~/datasets/ChairDataset --phase test --exp-name exp_geocode_chair --parallel 10 --mod $NODE_ID
 ```
 
 where `$NODE_ID` is the node id.
