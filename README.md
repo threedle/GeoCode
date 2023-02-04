@@ -230,7 +230,7 @@ This step does not require a conda env but requires GPU(s)
 
 ```bash
 cd GeoCode
-~/Blender/blender-3.2.0-linux-x64/blender ~/blends/procedural_vase.blend -b dataset_generators/sketch_generator.py -- --dataset-dir ~/datasets/MyChairDataset --phases val test train
+~/Blender/blender-3.2.0-linux-x64/blender ~/blends/procedural_vase.blend -b --python dataset_generators/sketch_generator.py -- --dataset-dir ~/datasets/MyChairDataset --phases val test train
 ```
 
 You can also run this in parallel, for example, with 10 processes, by adding the flags `--parallel 10 --mod $NODE_ID`
@@ -259,6 +259,7 @@ Please refer to the README.md file that is downloaded along with the scripts aft
 ```bash
 cd GeoCode
 scripts/download_ds_processing_scripts.py
+~/Blender/blender-3.2.0-linux-x64/blender -b --python dataset_processing/prepare_coseg.py -- --help
 ```
 
 ## Code structure

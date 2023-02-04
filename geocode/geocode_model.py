@@ -15,6 +15,7 @@ from calculator_loss import LossCalculator
 from common.param_descriptors import ParamDescriptors
 from pathlib import Path
 from geocode_util import InputType
+import timeit
 
 
 class Model(pl.LightningModule):
@@ -44,6 +45,9 @@ class Model(pl.LightningModule):
         self.test_dataloaders_types = test_dataloaders_types
         self.test_type = test_input_type
         self.use_regression = use_regression
+
+        self.num_inferred_samples = 0
+        self.inference_time = 0.0
 
         regression_params = None
         if self.use_regression:
@@ -260,16 +264,21 @@ class Model(pl.LightningModule):
         else:
             raise Exception(f"Unrecognized dataloader type [{self.test_dataloaders_types[dataloader_idx]}]")
 
+        t_0 = timeit.default_timer()
         if pc is not None:
             pcs = pc.transpose(2, 1)
             pred_pc = self.decoders_net.decode(self.dgcnn(pcs))
             pred_map_pc = self.param_descriptors.convert_prediction_vector_to_map(pred_pc.cpu(), use_regression=self.use_regression)
+            self.num_inferred_samples += pred_pc.shape[0]
+            self.inference_time += timeit.default_timer() - t_0
             pc_pred_yaml_file_path = self.results_dir.joinpath('yml_predictions_pc', f'{file_name[0]}_pred_pc.yml')
             with open(pc_pred_yaml_file_path, 'w') as yaml_file:
                 yaml.dump(pred_map_pc, yaml_file)
         elif sketch is not None:
             pred_sketch = self.decoders_net.decode(self.vgg(sketch))
             pred_map_sketch = self.param_descriptors.convert_prediction_vector_to_map(pred_sketch.cpu(), use_regression=self.use_regression)
+            self.num_inferred_samples += pred_sketch.shape[0]
+            self.inference_time += timeit.default_timer() - t_0
             sketch_pred_yaml_file_path = self.results_dir.joinpath('yml_predictions_sketch',
                                                                    f'{file_name[0]}_{sketch_camera_angle[0]}_pred_sketch.yml')
             with open(sketch_pred_yaml_file_path, 'w') as yaml_file:

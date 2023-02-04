@@ -9,7 +9,7 @@ from argparse import ArgumentParser
 
 
 def download_ds(args):
-    md5 = "fd431a26112bbb3b508920377ad4df71"
+    md5 = "41e5dd0df4ac5615bb2e24e977aaec22"
     ds_url = "https://drive.google.com/uc?id=1-NzLI--y1ewwZSX6kDJ3ALiC8UvolulR"
     ds_zip_file_name = "dataset_processing.zip"
 

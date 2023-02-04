@@ -15,9 +15,10 @@ def generate_point_clouds(data_dir, phase, num_points, num_point_clouds_per_comb
     samples point cloud from mesh
     """
     dataset_dir = Path(data_dir, phase)
+    obj_gt_dir = dataset_dir.joinpath('obj_gt')
     processed_dataset_dir = dataset_dir.joinpath(processed_dataset_dir_name)
     processed_dataset_dir.mkdir(exist_ok=True)
-    files = sorted(dataset_dir.glob('*.obj'))
+    files = sorted(obj_gt_dir.glob('*.obj'))
     for file in tqdm(files):
         faces = None
         vertices = None

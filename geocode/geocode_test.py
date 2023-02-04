@@ -3,6 +3,7 @@ import torch
 import shutil
 import traceback
 import numpy as np
+from tqdm import tqdm
 import multiprocessing
 from pathlib import Path
 from functools import partial
@@ -25,18 +26,21 @@ def sample_pc_random(obj_path, num_points=10_000, apply_point_cloud_normalizatio
     """
     Chamfer evaluation
     """
-    vertices, faces = load_obj(obj_path)
-    vertices = vertices.reshape(1, vertices.shape[0], vertices.shape[1])
-    vertices = torch.from_numpy(vertices)
-    faces = torch.from_numpy(faces)
-    point_cloud = sample_surface(faces, vertices, num_points=num_points)
-    if apply_point_cloud_normalization:
-        point_cloud = normalize_point_cloud(point_cloud)
-    # assert that the point cloud is normalized
-    max_dist_in_pc = torch.max(torch.sqrt(torch.sum((point_cloud ** 2), dim=1)))
-    threshold = 0.1
-    assert abs(1.0 - max_dist_in_pc) <= threshold, f"PC of obj [{obj_path}] is not normalized, max distance in PC was [{abs(1.0 - max_dist_in_pc)}] but required to be <= [{threshold}]."
-    return point_cloud
+    try:
+        vertices, faces = load_obj(obj_path)
+        vertices = vertices.reshape(1, vertices.shape[0], vertices.shape[1])
+        vertices = torch.from_numpy(vertices)
+        faces = torch.from_numpy(faces)
+        point_cloud = sample_surface(faces, vertices, num_points=num_points)
+        if apply_point_cloud_normalization:
+            point_cloud = normalize_point_cloud(point_cloud)
+        # assert that the point cloud is normalized
+        max_dist_in_pc = torch.max(torch.sqrt(torch.sum((point_cloud ** 2), dim=1)))
+        threshold = 0.1
+        assert abs(1.0 - max_dist_in_pc) <= threshold, f"PC of obj [{obj_path}] is not normalized, max distance in PC was [{abs(1.0 - max_dist_in_pc)}] but required to be <= [{threshold}]."
+        return point_cloud
+    except:
+        return None
 
 
 def get_chamfer_distance(target_pc, gt_pc, device, num_points_in_pc, check_rot=False):
@@ -154,6 +158,11 @@ def test(opt):
 
     trainer = pl.Trainer(gpus=1)
     trainer.test(model=pl_model, dataloaders=test_dataloaders, ckpt_path=best_model_and_highest_epoch)
+
+    # report average inference time
+    avg_inference_time = pl_model.inference_time / pl_model.num_inferred_samples
+    print(f"Average inference time for [{pl_model.num_inferred_samples}] samples is [{avg_inference_time:.3f}]")
+
     # save the validation and test bar-plots as image
     barplot_target_dir = results_dir.joinpath('barplot')
     for barplot_type in ['val', 'test']:
@@ -185,7 +194,10 @@ def test(opt):
             # for each gt obj file we might have multiple yml files as predictions, like for the sketches
             yml_files = sorted(yml_dir.glob("*.yml"))
             # filter out existing
+            skipped_files = [yml_file for yml_file in yml_files if results_dir.joinpath(out_dir, f'{yml_file.stem}.obj').is_file()]
             yml_files_filtered = [yml_file for yml_file in yml_files if not results_dir.joinpath(out_dir, f'{yml_file.stem}.obj').is_file()]
+            if len(skipped_files):
+                print(f"Skipping [{len(skipped_files)}] files that were already converted")
             if out_dir == 'obj_gt' and not yml_files:
                 # COSEG (or any external ds for which we do not have ground truth yml files)
                 for obj_file in test_dir_obj_gt.glob("*.obj"):
@@ -211,7 +223,8 @@ def test(opt):
     num_points_in_pc_for_chamfer = 10000
     chamfer_json = {'pc': {}, 'sketch': {}}
     chamfer_summary_json = {'pc': {'chamfer_sum': 0.0, 'num_samples': 0}, 'sketch': {'chamfer_sum': 0.0, 'num_samples': 0}}
-    for file_idx, file_name in enumerate(file_names): # for each unique test object
+    skipped_samples = []
+    for file_name in tqdm(file_names):  # for each unique test object
         # get ground truth point cloud (uniform)
         gt_file_name = file_name
         if "_decimate_ratio_0" in file_name:
@@ -233,17 +246,30 @@ def test(opt):
                                      num_points=num_points_in_pc_for_chamfer,
                                      apply_point_cloud_normalization=opt.normalize_pc)
 
+        skip_sample = False
         for input_type, model_prediction_dir in [('pc', model_predictions_pc_dir), ('sketch', model_predictions_sketch_dir)]:
-            yml_files = sorted(model_prediction_dir.glob(f"{file_name}_*.yml"))
+            yml_files = sorted(model_prediction_dir.glob(f"{file_name}*.yml"))
             for yml_file in yml_files:
                 yml_file_base_name_no_ext = yml_file.stem
                 target_pc = sample_pc_random(results_dir.joinpath(f'obj_predictions_{input_type}', f'{yml_file_base_name_no_ext}.obj'),
                                              num_points=num_points_in_pc_for_chamfer,
                                              apply_point_cloud_normalization=opt.normalize_pc)
+                if target_pc is None:
+                    skip_sample = True
+                    break
                 chamf_distance = get_chamfer_distance(target_pc, gt_pc, device, num_points_in_pc_for_chamfer, check_rot=(input_type == 'sketch'))
                 chamfer_summary_json[input_type]['chamfer_sum'] += chamf_distance.item()
                 chamfer_summary_json[input_type]['num_samples'] += 1
                 chamfer_json[input_type][yml_file_base_name_no_ext] = chamf_distance.item()
+            if skip_sample:
+                break
+        if skip_sample:
+            skipped_samples.append(file_name)
+
+    if len(skipped_samples) > 0:
+        print(f"Skipped [{len(skipped_samples)/len(file_names)}] files when calculating the Chamfer Distances:")
+        for file_name in skipped_samples:
+            print(f"\t{file_name}")
 
     # compute overall average
     if chamfer_summary_json['pc']['num_samples'] > 0:
