@@ -53,12 +53,12 @@ def shape_to_yml(gnodes_mod):
     return shape_yml_obj
 
 
-def save_obj_label(gnodes_mod, targe_yml_file_path: Path):
+def save_obj_label(gnodes_mod, target_yml_file_path: Path):
     """
     convert the object to parameter space and save it as a yaml file
     """
     shape_yml_obj = shape_to_yml(gnodes_mod)
-    save_yml(shape_yml_obj, targe_yml_file_path)
+    save_yml(shape_yml_obj, target_yml_file_path)
 
 
 def update_base_shape_in_yml(gnodes_mod, recipe_file_path: Path):
@@ -142,6 +142,8 @@ def generate_dataset(domain, dataset_dir: Path, phase, random_shapes_per_value, 
         dup_hashes_attempts = []
 
         shape_validator = ShapeValidatorFactory.create_validator(domain)
+
+        num_disqualified = 0
         
         existing_samples = {}
         for curr_param_name, curr_input_param in input_params_map.items():
@@ -184,6 +186,7 @@ def generate_dataset(domain, dataset_dir: Path, phase, random_shapes_per_value, 
                     param_values_map[curr_param_name] = curr_param_value
 
                     if not param_descriptors.check_constraints(param_values_map):
+                        num_disqualified += 1
                         with open(f'./retry_{mod}.log', 'a') as f:
                             f.write(f'constraints {file_name}\n')
                         continue
@@ -204,6 +207,7 @@ def generate_dataset(domain, dataset_dir: Path, phase, random_shapes_per_value, 
                     # shape-specific validation
                     is_valid, msg = shape_validator.validate_shape(input_params_map)
                     if not is_valid:
+                        num_disqualified += 1
                         with open(f'./retry_{mod}.log', 'a') as f:
                             f.write(f'Shape invalid with message [{msg}] for file {file_name}\n')
                         continue
@@ -223,10 +227,10 @@ def generate_dataset(domain, dataset_dir: Path, phase, random_shapes_per_value, 
                         continue
                     existing_samples[sample_hash] = file_name
 
-                    targe_yml_file_path = yml_gt_dir.joinpath(f"{file_name}.yml")
-                    save_obj_label(gnodes_mod, targe_yml_file_path)
-                    targe_obj_file_path = obj_gt_dir.joinpath(f"{file_name}.obj")
-                    dup_obj = save_obj(targe_obj_file_path)
+                    target_yml_file_path = yml_gt_dir.joinpath(f"{file_name}.yml")
+                    save_obj_label(gnodes_mod, target_yml_file_path)
+                    target_obj_file_path = obj_gt_dir.joinpath(f"{file_name}.obj")
+                    dup_obj = save_obj(target_obj_file_path)
                     # delete the duplicate object
                     select_objs(dup_obj)
                     bpy.ops.object.delete()
@@ -239,6 +243,8 @@ def generate_dataset(domain, dataset_dir: Path, phase, random_shapes_per_value, 
             dup_hashes_attempts_file.writelines([f"{h}\n" for h in dup_hashes_attempts])
             dup_hashes_attempts_file.write('---\n')
 
+        existing_samples['metadata'] = {}
+        existing_samples['metadata']['num_disqualified'] = num_disqualified
         return existing_samples
 
     except Exception as e:
@@ -318,21 +324,26 @@ def main_generate_dataset_parallel(args, blender_exe, blend_file):
             # will avoid creating the same sample across all of these phases
 
             existing_samples = {}
+            num_disqualified = 0
             # add all the samples hashes from any other phase to avoid duplicates with other phases
             sample_hashes_json_file_path = dataset_dir.joinpath("sample_hashes.json")
             if sample_hashes_json_file_path.is_file():
                 with open(sample_hashes_json_file_path, 'r') as existing_samples_file:
                     existing_samples = json.load(existing_samples_file)
+                    num_disqualified = existing_samples[args.phase]['metadata']['num_disqualified']
             # clear any current phase sample hashes as they are added by the processes
             existing_samples[args.phase] = {}
 
             # every process generates a 'sample_hashes_<id>.json' file containing hash -> file_name map
-            for existing_samples_json_file_path in dataset_dir.glob("sample_hashes_*.json"):
-                with open(existing_samples_json_file_path, 'r') as existing_samples_json_file:
-                    existing_samples_json = json.load(existing_samples_json_file)
-                    print(existing_samples_json_file_path)
-                    print(existing_samples_json)
-                    for hash, file_name in existing_samples_json.items():
+            for single_process_existing_samples_json_file_path in dataset_dir.glob("sample_hashes_*.json"):
+                with open(single_process_existing_samples_json_file_path, 'r') as single_process_existing_samples_json_file:
+                    single_process_existing_samples = json.load(single_process_existing_samples_json_file)
+                    num_disqualified += single_process_existing_samples['metadata']['num_disqualified']
+                    print(single_process_existing_samples_json_file_path)
+                    print(single_process_existing_samples)
+                    for hash, file_name in single_process_existing_samples.items():
+                        if hash == 'metadata':
+                            continue
                         is_dup = False
                         for phase, sample_hashes in existing_samples.items():
                             if hash in sample_hashes:
@@ -341,6 +352,9 @@ def main_generate_dataset_parallel(args, blender_exe, blend_file):
                                 break
                         if not is_dup:
                             existing_samples[args.phase][hash] = file_name
+
+            existing_samples[args.phase]['metadata'] = {}
+            existing_samples[args.phase]['metadata']['num_disqualified'] = num_disqualified
 
             # delete the duplicated files so they will be regenerated
             if duplicates:
@@ -356,11 +370,12 @@ def main_generate_dataset_parallel(args, blender_exe, blend_file):
             with open(f"{dataset_dir}/sample_hashes.json", 'w') as sample_hashes_file:
                 json.dump(existing_samples, sample_hashes_file)
 
-            if len(existing_samples[args.phase]) > expected_number_of_samples:
-                raise Exception("Something went wrong, make sure you know how to count")
+            # -1 is since we also store a metadata object for each phase
+            if len(existing_samples[args.phase]) - 1 > expected_number_of_samples:
+                raise Exception("Something went wrong, make sure you know how to count the number of expected samples")
             print(len(existing_samples[args.phase]))
             print(expected_number_of_samples)
-            if len(existing_samples[args.phase]) == expected_number_of_samples:
+            if len(existing_samples[args.phase]) - 1 == expected_number_of_samples:
                 print('Done creating the requested dataset')
                 break
 
