@@ -83,7 +83,7 @@ class DatasetSketch(data.Dataset):
                 raise Exception(f"Object [{file_name}] is missing sketch files")
         sketch_file = sketch_files[sketch_idx]
         sketch = Image.open(sketch_file).convert("RGB")
-        if sketch.size[0] != sketch.size[0]:
+        if sketch.size[0] != sketch.size[1]:
             raise Exception(f"Images should be square, got [{sketch.size}] instead.")
         if sketch.size[0] != 224:
             sketch = sketch.resize((224, 224), Image.BILINEAR)
