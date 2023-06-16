@@ -1,7 +1,7 @@
 # GeoCode: Interpretable Shape Programs [[Project Page](https://threedle.github.io/GeoCode/)]
 [![arXiv](https://img.shields.io/badge/arXiv-GeoCode-b31b1b.svg)](https://arxiv.org/abs/2212.11715)
 
-*[Ofek Pearl](https://github.com/ofekp), [Itai Lang](https://scholar.google.com/citations?user=q0bBhtsAAAAJ), [Yuhua Hu](https://yuhuahu310.github.io/), [Raymond A. Yeh](https://raymond-yeh.com/), [Rana Hanocka](https://people.cs.uchicago.edu/~ranahanocka/)*
+*[Ofek Pearl](https://github.com/ofekp), [Itai Lang](https://itailang.github.io/), [Yuhua Hu](https://yuhuahu310.github.io/), [Raymond A. Yeh](https://raymond-yeh.com/), [Rana Hanocka](https://people.cs.uchicago.edu/~ranahanocka/)*
 
 ![alt GeoCode](resources/teaser.png)
 
