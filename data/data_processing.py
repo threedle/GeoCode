@@ -55,7 +55,8 @@ def normalize_labels(data_dir, phase, processed_dataset_dir_name, params_descrip
     processed_dataset_dir = dataset_dir.joinpath(processed_dataset_dir_name)
     processed_dataset_dir.mkdir(exist_ok=True)
 
-    files = sorted(dataset_dir.glob('*.yml'))
+    yml_gt_dir = dataset_dir.joinpath('yml_gt')
+    files = sorted(yml_gt_dir.glob('*.yml'))
     for file in files:
         if not file.is_file():
             # it is only allowed to not have a gt yml file when we are in test phase
@@ -72,7 +73,7 @@ def normalize_labels(data_dir, phase, processed_dataset_dir_name, params_descrip
 
         # only apply the normalization to the inputs that were changed in this dataset
         for param_name, param_descriptor in params_descriptors.items():
-            param_input_type = param_descriptor.input_types
+            param_input_type = param_descriptor.input_type
             min_val = param_descriptor.min_val
             max_val = param_descriptor.max_val
             if param_input_type == 'Integer':

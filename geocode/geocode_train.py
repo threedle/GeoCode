@@ -11,7 +11,6 @@ from data.dataset_pc import DatasetPC
 from data.dataset_sketch import DatasetSketch
 from common.param_descriptors import ParamDescriptors
 from common.file_util import get_recipe_yml_obj
-from geocode_model import Model
 from pytorch_lightning.trainer.supporters import CombinedLoader
 from geocode_util import InputType, get_inputs_to_eval, calc_prediction_vector_size
 
@@ -28,7 +27,7 @@ def train(opt):
 
     top_k_acc = 2
     camera_angles_to_process = [f'{a}_{b}' for a, b in recipe_yml_obj['camera_angles_train']]
-    param_descriptors = ParamDescriptors(recipe_yml_obj, inputs_to_eval, use_regression=opt.use_regression)
+    param_descriptors = ParamDescriptors(recipe_yml_obj, inputs_to_eval, use_regression=opt.use_regression, train_with_visibility_label=(not opt.huang))
     param_descriptors_map = param_descriptors.get_param_descriptors_map()
     detailed_vec_size = calc_prediction_vector_size(param_descriptors_map)
     print(f"Prediction vector length is set to [{sum(detailed_vec_size)}]")
@@ -38,26 +37,24 @@ def train(opt):
     train_loaders_map = {}
     val_loaders_map = {}
 
+    num_workers = 5  # use 1 when debugging, otherwise 5
+
     # pc
     if InputType.pc in opt.input_type:
-        train_dataset_pc = DatasetPC(inputs_to_eval, device, param_descriptors_map,
-                                     opt.dataset_dir, "train", augment_with_random_points=True)
-        train_dataloader_pc = DataLoader(train_dataset_pc, batch_size=opt.batch_size, shuffle=True, num_workers=5, prefetch_factor=5)
-        val_dataset_pc = DatasetPC(inputs_to_eval, device, param_descriptors_map,
-                                   opt.dataset_dir, "val", augment_with_random_points=True)
-        val_dataloader_pc = DataLoader(val_dataset_pc, batch_size=opt.batch_size, shuffle=False, num_workers=5, prefetch_factor=5)
+        train_dataset_pc = DatasetPC(inputs_to_eval, device, param_descriptors_map, opt.dataset_dir, "train", augment_with_random_points=True)
+        train_dataloader_pc = DataLoader(train_dataset_pc, batch_size=opt.batch_size, shuffle=True, num_workers=num_workers, prefetch_factor=5)
+        val_dataset_pc = DatasetPC(inputs_to_eval, device, param_descriptors_map, opt.dataset_dir, "val", augment_with_random_points=True)
+        val_dataloader_pc = DataLoader(val_dataset_pc, batch_size=opt.batch_size, shuffle=False, num_workers=num_workers, prefetch_factor=5)
         train_loaders_map['pc'] = train_dataloader_pc
         val_loaders_map['pc'] = val_dataloader_pc
         print(f"Point cloud train dataset size [{len(train_dataset_pc)}] val dataset size [{len(val_dataset_pc)}]")
 
     # sketch
     if InputType.sketch in opt.input_type:
-        train_dataset_sketch = DatasetSketch(inputs_to_eval, param_descriptors_map, camera_angles_to_process, opt.pretrained_vgg,
-                                             opt.dataset_dir, "train")
-        train_dataloader_sketch = DataLoader(train_dataset_sketch, batch_size=opt.batch_size, shuffle=True, num_workers=5, prefetch_factor=5)
-        val_dataset_sketch = DatasetSketch(inputs_to_eval, param_descriptors_map, camera_angles_to_process, opt.pretrained_vgg,
-                                           opt.dataset_dir, "val")
-        val_dataloader_sketch = DataLoader(val_dataset_sketch, batch_size=opt.batch_size, shuffle=False, num_workers=5, prefetch_factor=5)
+        train_dataset_sketch = DatasetSketch(inputs_to_eval, param_descriptors_map, camera_angles_to_process, opt.pretrained_vgg, opt.dataset_dir, "train")
+        train_dataloader_sketch = DataLoader(train_dataset_sketch, batch_size=opt.batch_size, shuffle=True, num_workers=num_workers, prefetch_factor=5)
+        val_dataset_sketch = DatasetSketch(inputs_to_eval, param_descriptors_map, camera_angles_to_process, opt.pretrained_vgg, opt.dataset_dir, "val")
+        val_dataloader_sketch = DataLoader(val_dataset_sketch, batch_size=opt.batch_size, shuffle=False, num_workers=num_workers, prefetch_factor=5)
         train_loaders_map['sketch'] = train_dataloader_sketch
         val_loaders_map['sketch'] = val_dataloader_sketch
         print(f"Sketch train dataset size [{len(train_dataset_sketch)}] val dataset size [{len(val_dataset_sketch)}]")
@@ -111,11 +108,11 @@ def train(opt):
     # log parameters to Neptune
     params = {
         "exp_name": opt.exp_name,
-        "lr": 1e-2,
+        "lr": 1e-2 if not opt.huang else 3e-4,
         "bs": opt.batch_size,
         "n_parameters": len(inputs_to_eval),
         "sched_step_size": 20,
-        "sched_gamma": 0.9,
+        "sched_gamma": 0.85 if not opt.huang else 0.9,
         "normalize_embeddings": opt.normalize_embeddings,
         "increase_net_size": opt.increase_network_size,
         "pretrained_vgg": opt.pretrained_vgg,
@@ -133,7 +130,21 @@ def train(opt):
         mode="max",
         save_top_k=3)
 
-    trainer = pl.Trainer(gpus=1, max_epochs=opt.nepoch, logger=neptune_logger, callbacks=[checkpoint_callback])
+    huang_continuous = False
+    huang_discrete = False
+    if opt.huang == 'continuous':
+        huang_continuous = True
+    elif opt.huang == 'discrete':
+        huang_discrete = True
+
+    # import the relevant Model class
+    if opt.huang:
+        # comparison to Huang et al.
+        from geocode_model_alexnet import Model
+    else:
+        from geocode_model import Model
+
+    trainer = pl.Trainer(gpus=[0], max_epochs=opt.nepoch, logger=neptune_logger, callbacks=[checkpoint_callback])
     last_ckpt_file_name = f"{checkpoint_callback.CHECKPOINT_NAME_LAST}{checkpoint_callback.FILE_EXTENSION}"  # "last.ckpt" by default
     last_checkpoint_file_path = exp_dir.joinpath(last_ckpt_file_name)
     if last_checkpoint_file_path.is_file():
@@ -142,9 +153,14 @@ def train(opt):
                                               param_descriptors=param_descriptors,
                                               trainer=trainer,
                                               models_dir=opt.models_dir,
-                                              exp_name=opt.exp_name)
+                                              exp_name=opt.exp_name,
+                                              use_regression=opt.use_regression,
+                                              discrete=huang_discrete,
+                                              continuous=huang_continuous)
     else:
+        last_checkpoint_file_path = None
         pl_model = Model(top_k_acc, opt.batch_size, detailed_vec_size, opt.increase_network_size, opt.normalize_embeddings, opt.pretrained_vgg,
                          opt.input_type, inputs_to_eval, params['lr'], params['sched_step_size'], params['sched_gamma'], opt.exp_name,
-                         trainer=trainer, param_descriptors=param_descriptors, models_dir=opt.models_dir, use_regression=opt.use_regression)
-    trainer.fit(pl_model, train_dataloaders=combined_train_dataloader, val_dataloaders=combined_val_dataloader, ckpt_path=None)
+                         trainer=trainer, param_descriptors=param_descriptors, models_dir=opt.models_dir, use_regression=opt.use_regression,
+                         discrete=huang_discrete, continuous=huang_continuous)
+    trainer.fit(pl_model, train_dataloaders=combined_train_dataloader, val_dataloaders=combined_val_dataloader, ckpt_path=last_checkpoint_file_path)

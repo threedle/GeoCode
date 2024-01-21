@@ -34,7 +34,6 @@ class Decoder(nn.Module):
 
         self.linear3 = nn.Linear(self.linear_out_features_2, output_channels)
 
-
     def forward(self, x):
         if self.bn:
             x = F.leaky_relu(self.bn6(self.linear1(x)), negative_slope=0.2)
@@ -69,6 +68,46 @@ class DecodersNet(nn.Module):
             if regression_params:
                 use_regression = regression_params[i]
             fan_out_list.append(Decoder(self.emb_dims, param_output_channels, increase_network_size, self.bn, use_regression))
+        self.fan_out = nn.ModuleList(fan_out_list)
+        self.initialize_weights(self)
+
+    @staticmethod
+    def initialize_weights(module):
+        for m in module.modules():
+            if isinstance(m, nn.Conv2d) or isinstance(m, nn.Conv1d):
+                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+                if m.bias is not None:
+                    nn.init.constant_(m.bias, 0)
+            elif isinstance(m, nn.BatchNorm2d) or isinstance(m, nn.BatchNorm1d):
+                nn.init.constant_(m.weight, 1.0)
+                nn.init.constant_(m.bias, 0)
+            elif isinstance(m, nn.Linear):
+                nn.init.normal_(m.weight, 0, 0.01)
+                if m.bias is not None:
+                    nn.init.constant_(m.bias, 0)
+
+    def decode(self, embedding):
+        param_outs = []
+        for net in self.fan_out:
+            param_outs.append(net(embedding))
+
+        x = torch.cat(param_outs, dim=1)
+        return x
+
+
+# used for comparison to "Shape Synthesis from Sketches via Procedural Models and Convolutional Networks"
+class DecodersNetAlex(nn.Module):
+    def __init__(self, output_channels):
+        """
+        output_channels - array containing the number of classes per parameter (including visibility label if exists)
+        """
+        # there is no Parallel module in torch (and there is no reason for one to exist)
+        # refer to https://github.com/pytorch/pytorch/issues/36459
+        super(DecodersNetAlex, self).__init__()
+        self.emb_dims = 4096
+        fan_out_list = []
+        for param_output_channels in output_channels:
+            fan_out_list.append(nn.Linear(4096, param_output_channels))
         self.fan_out = nn.ModuleList(fan_out_list)
         self.initialize_weights(self)
 

@@ -2,7 +2,7 @@ import torch
 from calculator_util import eval_metadata
 
 
-class AccuracyCalculator():
+class AccuracyCalculator:
     def __init__(self, inputs_to_eval, param_descriptors):
         self.inputs_to_eval = inputs_to_eval
         self.normalized_classes_all, self.num_classes_all_shifted_cumulated, self.num_classes_all, self.regression_params_indices \
@@ -49,4 +49,36 @@ class AccuracyCalculator():
                 assert len(cid) == batch_size
                 for j in range(top_k_acc):
                     correct[j][i] += len(cid[(cid <= j) & (cid >= -j)])
+        return correct
+
+    def eval_continuous_only(self, pred, targets, top_k_acc):
+        assert pred.dtype == torch.float
+        assert targets.dtype == torch.float
+        batch_size = pred.shape[0]
+        l1_distance = torch.where(targets == -1.0, torch.tensor(0.0).to(pred.device), torch.abs(pred - targets))
+        # continuous_param_names = [p_name for p_name in self.inputs_to_eval if self.param_descriptors[p_name].input_type in ['Vector', 'Float']]
+        correct = [[0] * len(self.inputs_to_eval) for _ in range(top_k_acc)]
+        for i, param_name in enumerate(self.inputs_to_eval):
+            normalized_acc_threshold = self.param_descriptors[param_name].normalized_acc_threshold
+            for j in range(top_k_acc):
+                correct[j][i] += torch.sum((l1_distance[:, i] < normalized_acc_threshold * (j + 1)).int()).item()
+        return correct
+
+
+    def eval_discrete_only(self, pred, targets, top_k_acc):
+        assert pred.dtype == torch.float
+        assert targets.dtype == torch.float
+        batch_size = pred.shape[0]
+        # l1_distance = torch.where(torch.logical_and(targets == -1.0, pred < 0.0), torch.tensor(0.0).to(pred.device), torch.abs(pred - targets))
+        # import pdb; pdb.set_trace()
+        device = targets.device
+        num_classes_all = self.num_classes_all.to(device)
+        pred_split = torch.split(pred, list(num_classes_all), dim=1)
+        correct = [[0] * len(self.inputs_to_eval) for _ in range(top_k_acc)]
+        for i, (pr, tt) in enumerate(zip(pred_split, targets.long().T)):
+            pred_classes = torch.argmax(pr, axis=1)
+            class_indices_diff = torch.abs(pred_classes - tt)
+            class_indices_diff = torch.where(tt == -1, 0, class_indices_diff)  # we consider target = -1 as success, thus we set the diff to 0
+            for j in range(top_k_acc):
+                correct[j][i] += len(class_indices_diff[class_indices_diff <= j])
         return correct

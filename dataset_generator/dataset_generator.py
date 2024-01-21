@@ -238,10 +238,13 @@ def generate_dataset(domain, dataset_dir: Path, phase, random_shapes_per_value, 
 
         # return the shape in Blender viewport to its original state
         yml_to_shape(base_shape_yml, input_params_map, ignore_sanity_check=True)
-        dup_hashes_attempts_file_path = dataset_dir.joinpath(f"dup_hashes_attempts_{mod}.txt")
-        with open(dup_hashes_attempts_file_path, 'a') as dup_hashes_attempts_file:
-            dup_hashes_attempts_file.writelines([f"{h}\n" for h in dup_hashes_attempts])
-            dup_hashes_attempts_file.write('---\n')
+
+        # log duplicate attempts
+        if dup_hashes_attempts:
+            dup_hashes_attempts_file_path = dataset_dir.joinpath(f"dup_hashes_attempts_{mod}.txt")
+            with open(dup_hashes_attempts_file_path, 'a') as dup_hashes_attempts_file:
+                dup_hashes_attempts_file.writelines([f"{h}\n" for h in dup_hashes_attempts])
+                dup_hashes_attempts_file.write('---\n')
 
         existing_samples['metadata'] = {}
         existing_samples['metadata']['num_disqualified'] = num_disqualified
@@ -330,7 +333,8 @@ def main_generate_dataset_parallel(args, blender_exe, blend_file):
             if sample_hashes_json_file_path.is_file():
                 with open(sample_hashes_json_file_path, 'r') as existing_samples_file:
                     existing_samples = json.load(existing_samples_file)
-                    num_disqualified = existing_samples[args.phase]['metadata']['num_disqualified']
+                    if args.phase in existing_samples:
+                        num_disqualified = existing_samples[args.phase]['metadata']['num_disqualified']
             # clear any current phase sample hashes as they are added by the processes
             existing_samples[args.phase] = {}
 

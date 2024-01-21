@@ -22,13 +22,14 @@ def main():
 
     common_parser = argparse.ArgumentParser(add_help=False)
     common_parser.add_argument('--dataset-dir', type=str, required=True, help='Path to dataset directory')
-    common_parser.add_argument('--models-dir', type=str, required=True, help='Directory where experiments will be saved')
+    common_parser.add_argument('--models-dir', type=str, required=False, help='Directory where experiments will be saved')
     common_parser.add_argument('--exp-name', type=str, required=True, help='Experiment directory within the models directory, where checkpoints will be saved')
     common_parser.add_argument('--input-type', type=InputType, nargs='+', default='pc sketch', help='Either \"pc\", \"sketch\" or \"pc sketch\"')
     common_parser.add_argument('--increase-network-size', action='store_true', default=False, help='Use larger encoders networks sizes')
     common_parser.add_argument('--normalize-embeddings', action='store_true', default=False, help='Normalize embeddings before using the decoders')
     common_parser.add_argument('--pretrained-vgg', action='store_true', default=False, help='Use a pretrained VGG network')
     common_parser.add_argument('--use-regression', action='store_true', default=False, help='Use regression instead of classification for continuous parameters')
+    common_parser.add_argument('--huang', choices=['continuous', 'discrete'], default=False, help='Comparison to Huang et al. which separates contiuous and discrete parameters.')
 
     sp = parser.add_subparsers()
     sp_train = sp.add_parser('train', parents=[common_parser])

@@ -14,7 +14,6 @@ from data.dataset_sketch import DatasetSketch
 from barplot_util import gen_and_save_barplot
 from common.param_descriptors import ParamDescriptors
 from geocode_util import InputType, get_inputs_to_eval, calc_prediction_vector_size
-from geocode_model import Model
 from torch.utils.data import DataLoader
 from chamfer_distance import ChamferDistance as chamfer_dist
 from common.sampling_util import sample_surface
@@ -40,6 +39,7 @@ def sample_pc_random(obj_path, num_points=10_000, apply_point_cloud_normalizatio
         assert abs(1.0 - max_dist_in_pc) <= threshold, f"PC of obj [{obj_path}] is not normalized, max distance in PC was [{abs(1.0 - max_dist_in_pc)}] but required to be <= [{threshold}]."
         return point_cloud
     except:
+        print("Something went wrong while evaluating Chamfer Distance")
         return None
 
 
@@ -91,7 +91,7 @@ def test(opt):
     camera_angles_to_process = recipe_yml_obj['camera_angles_train'] + recipe_yml_obj['camera_angles_test']
     camera_angles_to_process = [f'{a}_{b}' for a, b in camera_angles_to_process]
 
-    param_descriptors = ParamDescriptors(recipe_yml_obj, inputs_to_eval, opt.use_regression)
+    param_descriptors = ParamDescriptors(recipe_yml_obj, inputs_to_eval, opt.use_regression, train_with_visibility_label=(not opt.huang))
     param_descriptors_map = param_descriptors.get_param_descriptors_map()
     detailed_vec_size = calc_prediction_vector_size(param_descriptors_map)
     print(f"Prediction vector length is set to [{sum(detailed_vec_size)}]")
@@ -113,67 +113,85 @@ def test(opt):
     shutil.copy(recipe_file_path, results_dir.joinpath('recipe.yml'))
 
     # find the best checkpoint (the one with the highest epoch number out of the saved checkpoints)
-    exp_dir = Path(opt.models_dir, opt.exp_name)
-    best_model_and_highest_epoch = None
-    highest_epoch = 0
-    for ckpt_file in exp_dir.glob("*.ckpt"):
-        file_name = ckpt_file.name
-        if 'epoch' not in file_name:
-            continue
-        epoch_start_idx = file_name.find('epoch') + len('epoch')
-        epoch = int(file_name[epoch_start_idx:epoch_start_idx + 3])
-        if epoch > highest_epoch:
-            best_model_and_highest_epoch = ckpt_file
-            highest_epoch = epoch
-    print(f'Best model with highest epoch is [{best_model_and_highest_epoch}]')
+    if opt.models_dir:
+        exp_dir = Path(opt.models_dir, opt.exp_name)
+        best_model_and_highest_epoch = None
+        highest_epoch = 0
+        for ckpt_file in exp_dir.glob("*.ckpt"):
+            file_name = ckpt_file.name
+            if 'epoch' not in file_name:
+                continue
+            epoch_start_idx = file_name.find('epoch') + len('epoch')
+            epoch = int(file_name[epoch_start_idx:epoch_start_idx + 3])
+            if epoch > highest_epoch:
+                best_model_and_highest_epoch = ckpt_file
+                highest_epoch = epoch
+        print(f'Best model with highest epoch is [{best_model_and_highest_epoch}]')
 
-    batch_size = 1
-    test_dataloaders = []
-    test_dataloaders_types = []
-    # pc
-    if InputType.pc in opt.input_type:
-        test_dataset_pc = DatasetPC(inputs_to_eval, device, param_descriptors_map,
-                                    opt.dataset_dir, opt.phase, random_pc=opt.random_pc,
-                                    gaussian=opt.gaussian, apply_point_cloud_normalization=opt.normalize_pc,
-                                    scanobjectnn=opt.scanobjectnn, augment_with_random_points=opt.augment_with_random_points)
-        test_dataloader_pc = DataLoader(test_dataset_pc, batch_size=batch_size, shuffle=False,
-                                        num_workers=2, prefetch_factor=2)
-        test_dataloaders.append(test_dataloader_pc)
-        test_dataloaders_types.append('pc')
-    # sketch
-    if InputType.sketch in opt.input_type:
-        test_dataset_sketch = DatasetSketch(inputs_to_eval, param_descriptors_map,
-                                            camera_angles_to_process, opt.pretrained_vgg,
-                                            opt.dataset_dir, opt.phase)
-        test_dataloader_sketch = DataLoader(test_dataset_sketch, batch_size=batch_size, shuffle=False,
-                                            num_workers=2, prefetch_factor=2)
-        test_dataloaders.append(test_dataloader_sketch)
-        test_dataloaders_types.append('sketch')
+        num_workers = 2
 
-    pl_model = Model.load_from_checkpoint(str(best_model_and_highest_epoch), batch_size=1,
-                                          param_descriptors=param_descriptors, results_dir=results_dir,
-                                          test_dir=test_dir, models_dir=opt.models_dir,
-                                          test_dataloaders_types=test_dataloaders_types, test_input_type=opt.input_type,
-                                          exp_name=opt.exp_name)
+        batch_size = 1
+        test_dataloaders = []
+        test_dataloaders_types = []
+        # pc
+        if InputType.pc in opt.input_type:
+            test_dataset_pc = DatasetPC(inputs_to_eval, device, param_descriptors_map,
+                                        opt.dataset_dir, opt.phase, random_pc=opt.random_pc,
+                                        gaussian=opt.gaussian, apply_point_cloud_normalization=opt.normalize_pc,
+                                        scanobjectnn=opt.scanobjectnn, augment_with_random_points=opt.augment_with_random_points)
+            test_dataloader_pc = DataLoader(test_dataset_pc, batch_size=batch_size, shuffle=False,
+                                            num_workers=num_workers, prefetch_factor=2)
+            test_dataloaders.append(test_dataloader_pc)
+            test_dataloaders_types.append('pc')
+        # sketch
+        if InputType.sketch in opt.input_type:
+            test_dataset_sketch = DatasetSketch(inputs_to_eval, param_descriptors_map,
+                                                camera_angles_to_process, opt.pretrained_vgg,
+                                                opt.dataset_dir, opt.phase)
+            test_dataloader_sketch = DataLoader(test_dataset_sketch, batch_size=batch_size, shuffle=False,
+                                                num_workers=num_workers, prefetch_factor=2)
+            test_dataloaders.append(test_dataloader_sketch)
+            test_dataloaders_types.append('sketch')
 
-    trainer = pl.Trainer(gpus=1)
-    trainer.test(model=pl_model, dataloaders=test_dataloaders, ckpt_path=best_model_and_highest_epoch)
+        huang_continuous = False
+        huang_discrete = False
+        if opt.huang == 'continuous':
+            huang_continuous = True
+        elif opt.huang == 'discrete':
+            huang_discrete = True
 
-    # report average inference time
-    avg_inference_time = pl_model.inference_time / pl_model.num_inferred_samples
-    print(f"Average inference time for [{pl_model.num_inferred_samples}] samples is [{avg_inference_time:.3f}]")
+        # import the relevant Model class
+        if opt.huang:
+            # comparison to Huang et al.
+            from geocode_model_alexnet import Model
+        else:
+            from geocode_model import Model
 
-    # save the validation and test bar-plots as image
-    barplot_target_dir = results_dir.joinpath('barplot')
-    for barplot_type in ['val', 'test']:
-        barplot_json_path = Path(opt.models_dir, opt.exp_name, f'{barplot_type}_barplot_top_1.json')
-        if not barplot_json_path.is_file():
-            print(f"Could not find barplot [{barplot_json_path}] skipping copy")
-            continue
-        barplot_target_image_path = barplot_target_dir.joinpath(f'{barplot_type}_barplot.png')
-        title = "Validation Accuracy" if barplot_type == 'val' else "Test Accuracy"
-        gen_and_save_barplot(barplot_json_path, title, barplot_target_image_path=barplot_target_image_path)
-        shutil.copy(barplot_json_path, barplot_target_dir.joinpath(barplot_json_path.name))
+        pl_model = Model.load_from_checkpoint(str(best_model_and_highest_epoch), batch_size=1,
+                                            param_descriptors=param_descriptors, results_dir=results_dir,
+                                            test_dir=test_dir, models_dir=opt.models_dir,
+                                            test_dataloaders_types=test_dataloaders_types, test_input_type=opt.input_type,
+                                            exp_name=opt.exp_name, use_regression=opt.use_regression,
+                                            discrete=huang_discrete, continuous=huang_continuous)
+
+        trainer = pl.Trainer(gpus=1)
+        trainer.test(model=pl_model, dataloaders=test_dataloaders, ckpt_path=best_model_and_highest_epoch)
+
+        # report average inference time
+        avg_inference_time = pl_model.inference_time / pl_model.num_inferred_samples
+        print(f"Average inference time for [{pl_model.num_inferred_samples}] samples is [{avg_inference_time:.3f}]")
+
+        # save the validation and test bar-plots as image
+        barplot_target_dir = results_dir.joinpath('barplot')
+        for barplot_type in ['val', 'test']:
+            barplot_json_path = Path(opt.models_dir, opt.exp_name, f'{barplot_type}_barplot_top_1.json')
+            if not barplot_json_path.is_file():
+                print(f"Could not find barplot [{barplot_json_path}] skipping copy")
+                continue
+            barplot_target_image_path = barplot_target_dir.joinpath(f'{barplot_type}_barplot.png')
+            title = "Validation Accuracy" if barplot_type == 'val' else "Test Accuracy"
+            gen_and_save_barplot(barplot_json_path, title, barplot_target_image_path=barplot_target_image_path)
+            shutil.copy(barplot_json_path, barplot_target_dir.joinpath(barplot_json_path.name))
 
     gt_dir = results_dir.joinpath('yml_gt')
     model_predictions_pc_dir = results_dir.joinpath('yml_predictions_pc')
@@ -185,9 +203,15 @@ def test(opt):
         # [:-2] removed the _0 suffix
         file_names = [str(f.stem)[:-2] for f in random_pc_dir.glob("*.npy")]
 
+    # for the comparison to Huang et al. we test in two phases, continuous then discrete, after the continuous test phase the yaml file
+    # will not contain all the parameters, so we should skip predicting it from it
+    if opt.huang == 'continuous':
+        print("Prediction and Chamfer calculation for Huang experiment is only done for discrete test phase, i.e. when setting the test flag `--huang discrete`")
+        return
+
     # create all the obj from the prediction yaml files
     # note that for pc we have one yml and for sketch we have multiple yml files (one for each camera angle)
-    cpu_count = multiprocessing.cpu_count()
+    cpu_count = 5  # multiprocessing.cpu_count()
     print(f"Converting yml files to obj files using [{cpu_count}] processes")
     for yml_dir, out_dir in [(gt_dir, 'obj_gt'), (model_predictions_pc_dir, 'obj_predictions_pc'), (model_predictions_sketch_dir, 'obj_predictions_sketch')]:
         try:
@@ -205,11 +229,11 @@ def test(opt):
                     shutil.copy(obj_file, str(Path(results_dir, out_dir, f"{obj_file.stem}_gt.obj")))
                 continue
             save_as_obj_proc_partial = partial(save_as_obj_proc,
-                                               recipe_file_path=recipe_file_path,
-                                               results_dir=results_dir,
-                                               out_dir=out_dir,
-                                               blender_exe=opt.blender_exe,
-                                               blend_file=opt.blend_file)
+                                            recipe_file_path=recipe_file_path,
+                                            results_dir=results_dir,
+                                            out_dir=out_dir,
+                                            blender_exe=opt.blender_exe,
+                                            blend_file=opt.blend_file)
             p = multiprocessing.Pool(cpu_count)
             p.map(save_as_obj_proc_partial, yml_files_filtered)
             p.close()
@@ -220,7 +244,7 @@ def test(opt):
     print("Done converting yml files to obj files")
 
     print("Calculating Chamfer Distances...")
-    num_points_in_pc_for_chamfer = 10000
+    num_points_in_pc_for_chamfer = 10_000
     chamfer_json = {'pc': {}, 'sketch': {}}
     chamfer_summary_json = {'pc': {'chamfer_sum': 0.0, 'num_samples': 0}, 'sketch': {'chamfer_sum': 0.0, 'num_samples': 0}}
     skipped_samples = []
@@ -242,9 +266,12 @@ def test(opt):
             gt_pc = torch.from_numpy(gt_pc).float()
             num_points_in_pc_for_chamfer = 2048
         else:
-            gt_pc = sample_pc_random(results_dir.joinpath('obj_gt',f'{file_name}_gt.obj'),
+            gt_pc = sample_pc_random(results_dir.joinpath('obj_gt', f'{file_name}_gt.obj'),
                                      num_points=num_points_in_pc_for_chamfer,
                                      apply_point_cloud_normalization=opt.normalize_pc)
+            if gt_pc is None:
+                print(f"Warning: skipping GT file [{gt_file_name}]")
+                continue
 
         skip_sample = False
         for input_type, model_prediction_dir in [('pc', model_predictions_pc_dir), ('sketch', model_predictions_sketch_dir)]:
@@ -257,6 +284,7 @@ def test(opt):
                 if target_pc is None:
                     skip_sample = True
                     break
+                assert gt_pc is not None, f"{results_dir.joinpath('obj_gt', f'{file_name}_gt.obj')}"
                 chamf_distance = get_chamfer_distance(target_pc, gt_pc, device, num_points_in_pc_for_chamfer, check_rot=(input_type == 'sketch'))
                 chamfer_summary_json[input_type]['chamfer_sum'] += chamf_distance.item()
                 chamfer_summary_json[input_type]['num_samples'] += 1

@@ -4,6 +4,7 @@ from calculator_util import eval_metadata
 
 MSE = torch.nn.MSELoss()
 CElossSum = torch.nn.CrossEntropyLoss(reduction='sum')
+CEloss = torch.nn.CrossEntropyLoss(reduction='none')
 
 
 class LossCalculator():
@@ -55,4 +56,13 @@ class LossCalculator():
         ce_loss_range = max(detailed_ce_loss_no_none).item() - min(detailed_ce_loss_no_none).item()
         detailed_loss = [(ce_loss / ce_loss_range) if not mse_loss else (mse_loss / mse_loss_range) for ce_loss, mse_loss in zip(detailed_ce_loss, detailed_mse_loss)]
 
+        return sum(detailed_loss), detailed_loss
+
+    def loss_discrete(self, pred, targets):
+        # this is specifically made to compare to SRPM paper
+        device = targets.device
+        num_classes_all = self.num_classes_all.to(device)
+        pred_split = torch.split(pred, list(num_classes_all), dim=1)
+        # import pdb; pdb.set_trace()
+        detailed_loss = [torch.sum(CEloss(p, torch.where(t == -1, 0, t)) * (t != -1).int()) for p, t in zip( pred_split, targets.long().T )]
         return sum(detailed_loss), detailed_loss

@@ -16,11 +16,11 @@ def isfloat(num):
 
 @dataclass
 class ParamDescriptor:
-    input_type: str
-    num_classes: int
+    input_type: str  # ['Integer', 'Boolean', 'Float', 'Vector']
+    num_classes: int  # including visibility class (-1) if exists
     step: float
-    classes: np.ndarray
-    normalized_classes: np.ndarray
+    classes: np.ndarray  # e.g. [-1, 5, 6, 7, 8]
+    normalized_classes: np.ndarray  # e.g. [-1, 0, 1, 2, 3]
     min_val: float
     max_val: float
     visibility_condition: str
@@ -200,6 +200,62 @@ class ParamDescriptors:
             idx += num_classes
         return shape_map
 
+    def convert_prediction_vector_to_map_continuous_only(self, inputs_to_eval, pred_vector):
+        """
+        for the comparison to SRPM
+        """
+        pred_vector = pred_vector.squeeze()
+        assert len(pred_vector.shape) == 1
+        shape_map = {}
+        idx = 0
+        param_descriptors_map = self.get_param_descriptors_map()
+        for param_name in inputs_to_eval:
+            param_descriptor = param_descriptors_map[param_name]
+            input_type = param_descriptor.input_type
+            classes = param_descriptor.classes
+            num_classes = param_descriptor.num_classes
+            assert input_type == 'Float' or input_type == 'Vector', f"param_name [{param_name}] input_type [{input_type}]"
+            min_val = param_descriptor.min_val
+            max_val = param_descriptor.max_val
+            pred_val = (float(pred_vector[idx]) * (max_val - min_val)) + min_val
+            if input_type == 'Vector':
+                if param_name[:-2] not in shape_map:
+                    shape_map[param_name[:-2]] = {}
+                shape_map[param_name[:-2]][param_name[-1]] = pred_val
+            else:
+                shape_map[param_name] = pred_val
+            idx += 1
+        return shape_map
+
+    def convert_prediction_vector_to_map_discrete_only(self, inputs_to_eval, pred_vector):
+        """
+        :param pred_vector: predicted vector from the network
+        :param use_regression: whether we use regression for float values
+        :return: map object representing the shape
+        """
+        pred_vector = pred_vector.squeeze()
+        assert len(pred_vector.shape) == 1
+        shape_map = {}
+        idx = 0
+        param_descriptors_map = self.get_param_descriptors_map()
+        for param_name in inputs_to_eval:
+            param_descriptor = param_descriptors_map[param_name]
+            input_type = param_descriptor.input_type
+            classes = param_descriptor.classes
+            num_classes = param_descriptor.num_classes
+            assert input_type == 'Boolean' or input_type == 'Integer', f"param_name [{param_name}] input_type [{input_type}]"
+            # Integer or Boolean
+            normalized_pred_class = int(np.argmax(pred_vector[idx:idx + num_classes]))
+            pred_val = int(classes[normalized_pred_class])
+            if input_type == 'Vector':
+                if param_name[:-2] not in shape_map:
+                    shape_map[param_name[:-2]] = {}
+                shape_map[param_name[:-2]][param_name[-1]] = pred_val
+            else:
+                shape_map[param_name] = pred_val
+            idx += num_classes
+        return shape_map
+
     def get_overall_num_of_classes_without_visibility_label(self):
         self.get_param_descriptors_map()
         return self.__overall_num_of_classes_without_visibility_label
@@ -227,4 +283,41 @@ class ParamDescriptors:
                 normalized_gt_class_idx = int(np.where(abs(normalized_classes - targets[i].item()) < 1e-3)[0].item())
                 one_hot = np.eye(num_classes)[normalized_gt_class_idx]
                 res_vector = np.concatenate((res_vector, one_hot))
+        return res_vector
+
+    def expand_target_vector_contiuous_only(self, inputs_to_eval, targets):
+        """
+        :param targets: 1-dim target vector which includes a single normalized value for each parameter
+        :return: 1-dim vector where each parameter prediction is in one-hot representation
+        """
+        targets = targets.squeeze()
+        assert len(targets.shape) == 1
+        res_vector = np.array([])
+        for i, param_name in enumerate(inputs_to_eval):
+            val = targets[i].reshape(1).item()
+            if val == -1.0:
+                res_vector = np.concatenate((res_vector, np.array([0.0])))
+            else:
+                res_vector = np.concatenate((res_vector, np.array([val])))
+        return res_vector
+
+    def expand_target_vector_discrete_only(self, inputs_to_eval, targets):
+        """
+        :param targets: 1-dim target vector which includes a single normalized value for each parameter
+        :return: 1-dim vector where each parameter prediction is in one-hot representation
+        """
+        targets = targets.squeeze()
+        assert len(targets.shape) == 1
+        res_vector = np.array([])
+        param_descriptors = self.get_param_descriptors_map()
+        for i, param_name in enumerate(inputs_to_eval):
+            param_descriptor = param_descriptors[param_name]
+            num_classes = param_descriptor.num_classes
+            normalized_classes = param_descriptor.normalized_classes
+            if targets[i].item() == -1.0:
+                normalized_gt_class_idx = 0
+            else:
+                normalized_gt_class_idx = int(np.where(abs(normalized_classes - targets[i].item()) < 1e-3)[0].item())
+            one_hot = np.eye(num_classes)[normalized_gt_class_idx]
+            res_vector = np.concatenate((res_vector, one_hot))
         return res_vector

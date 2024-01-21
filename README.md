@@ -3,6 +3,8 @@
 
 *[Ofek Pearl](https://github.com/ofekp), [Itai Lang](https://itailang.github.io/), [Yuhua Hu](https://yuhuahu310.github.io/), [Raymond A. Yeh](https://raymond-yeh.com/), [Rana Hanocka](https://people.cs.uchicago.edu/~ranahanocka/)*
 
+# GeoCode: Interpretable Shape Programs
+
 ![alt GeoCode](resources/teaser.png)
 
 > We present GeoCode, a technique for 3D shape synthesis using an intuitively editable parameter space. We build a novel program that enforces a complex set of rules and enables users to perform intuitive and controlled high-level edits that procedurally propagate at a low level to the entire shape. Our program produces high-quality mesh outputs by construction. We use a neural network to map a given point cloud or sketch to our interpretable parameter space. Once produced by our procedural program, shapes can be easily modified. Empirically, we show that GeoCode can infer and recover 3D shapes more accurately compared to existing techniques and we demonstrate its ability to perform controlled local and global shape manipulations.
@@ -15,7 +17,6 @@
 <p align="center">
 A demo video of our program is available on our <a href="https://threedle.github.io/GeoCode/">project page</a>.
 </p>
-
 
 ## Requirements
 - Python 3.8
@@ -42,6 +43,7 @@ conda activate geocode
 python setup.py install
 
 # Install Blender 3.2 under `~/Blender`
+(sudo) chmod +x ./scripts/install_blender3.2.sh
 ./scripts/install_blender3.2.sh
 
 # Download the dataset (`~/datasets`), checkpoint (`~/models`) and blend file (`~/blends`) of the `chair` domain
@@ -270,8 +272,8 @@ scripts/download_ds_processing_scripts.py
 - `dataset_processing` - scripts that are intended to manipulate existing datasets
 - `geocode` - main training and testing code
 - `models` - point cloud and sketch encoders and the decoders network
-- `scripts` - contains script to set up our datasets and saved checkpoints 
-- `stability_metric` - script to evaluate a tested phase using our *stability metric*
+- `scripts` - contains scripts to set up our datasets and saved checkpoints and installing Blender
+- `stability_metric` - scripts to evaluate a tested phase using our *stability metric*
 - `visualize_results` - script to generate the renders for all ground truth and predicted shapes
 
 # Citation
