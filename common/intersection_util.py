@@ -43,12 +43,6 @@ def isolate_node_as_final_geometry(obj, node_label):
 
 
 def detect_self_intersection(obj):
-    """
-    refer to:
-    https://blenderartists.org/t/self-intersection-detection/671080
-    documentation of the intersection detection method
-    https://docs.blender.org/api/current/mathutils.bvhtree.html
-    """
     if not obj.data.polygons:
         return array.array('i', ())
 

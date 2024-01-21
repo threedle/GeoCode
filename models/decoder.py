@@ -55,7 +55,6 @@ class DecodersNet(nn.Module):
         output_channels - array containing the number of classes per parameter (including visibility label if exists)
         """
         # there is no Parallel module in torch (and there is no reason for one to exist)
-        # refer to https://github.com/pytorch/pytorch/issues/36459
         super(DecodersNet, self).__init__()
         if increase_network_size:
             self.emb_dims = 1024
@@ -102,7 +101,6 @@ class DecodersNetAlex(nn.Module):
         output_channels - array containing the number of classes per parameter (including visibility label if exists)
         """
         # there is no Parallel module in torch (and there is no reason for one to exist)
-        # refer to https://github.com/pytorch/pytorch/issues/36459
         super(DecodersNetAlex, self).__init__()
         self.emb_dims = 4096
         fan_out_list = []
