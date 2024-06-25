@@ -156,6 +156,7 @@ def render_images(target_dir: Path, file_name, suffix=None):
 
 def main():
     if '--' in sys.argv:
+        # refer to https://b3d.interplanety.org/en/how-to-pass-command-line-arguments-to-a-blender-python-script-or-add-on/
         argv = sys.argv[sys.argv.index('--') + 1:]
     else:
         raise Exception("Expected \'--\' followed by arguments to the script")

@@ -84,7 +84,7 @@ class Model(pl.LightningModule):
                 self.vgg.fc = nn.Linear(self.vgg.get_classifier().in_features, 128)
             elif self.discrete:
                 print("SRPM Discrete")
-                self.vgg = torch.hub.load('pytorch/vision:v0.10.0', 'alexnet', pretrained=False)
+                self.vgg = torch.hub.load('pytorch/vision:v0.10.0', 'alexnet', pretrained=False)  # https://pytorch.org/hub/pytorch_vision_alexnet/
                 self.vgg.features[0] = nn.Conv2d(1, 64, kernel_size=11, stride=4, padding=2)  # grayscale images, switch to 1 channel input
                 del self.vgg.classifier[-1]
                 num_classes_list = []
@@ -94,7 +94,7 @@ class Model(pl.LightningModule):
                 self.decoders_net = DecodersNetAlex(num_classes_list)  # overriding previous decoder net
             elif self.continuous:
                 print("SRPM Continuous")
-                self.vgg = torch.hub.load('pytorch/vision:v0.10.0', 'alexnet', pretrained=False)
+                self.vgg = torch.hub.load('pytorch/vision:v0.10.0', 'alexnet', pretrained=False)  # https://pytorch.org/hub/pytorch_vision_alexnet/
                 self.vgg.features[0] = nn.Conv2d(1, 64, kernel_size=11, stride=4, padding=2)  # grayscale images, switch to 1 channel input
                 self.vgg.classifier[-1] = nn.Linear(4096, len(self.inputs_to_eval))
                 # at this point the classifier is 9216->4096->4096->45 (this is actually an additional 9216 layer compared to SRPM paper)

@@ -34,6 +34,14 @@ from common.bpy_util import normalize_scale, look_at, del_obj, clean_scene
 from common.file_util import get_recipe_yml_obj, hash_file_name
 
 
+"""
+Shader references:
+    pencil shader - https://www.youtube.com/watch?v=71KGlu_Yxtg
+    white background (compositing) - https://www.youtube.com/watch?v=aegiN7XeLow
+    creating transparent object - https://www.katsbits.com/codex/transparency-cycles/
+"""
+
+
 def main(dataset_dir: Path, phase, parallel, mod):
     try:
         clean_scene()
@@ -132,6 +140,7 @@ def main(dataset_dir: Path, phase, parallel, mod):
 if __name__ == "__main__":
     argv = sys.argv
     if '--' in sys.argv:
+        # refer to https://b3d.interplanety.org/en/how-to-pass-command-line-arguments-to-a-blender-python-script-or-add-on/
         argv = sys.argv[sys.argv.index('--') + 1:]
     else:
         raise Exception("Expected \'--\' followed by arguments to the script")

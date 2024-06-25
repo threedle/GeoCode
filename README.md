@@ -1,13 +1,21 @@
+# GeoCode: Interpretable Shape Programs [[Project Page](https://threedle.github.io/GeoCode/)]
+[![arXiv](https://img.shields.io/badge/arXiv-GeoCode-b31b1b.svg)](https://arxiv.org/abs/2212.11715)
+
+*[Ofek Pearl](https://github.com/ofekp), [Itai Lang](https://itailang.github.io/), [Yuhua Hu](https://yuhuahu310.github.io/), [Raymond A. Yeh](https://raymond-yeh.com/), [Rana Hanocka](https://people.cs.uchicago.edu/~ranahanocka/)*
+
 # GeoCode: Interpretable Shape Programs
 
 ![alt GeoCode](resources/teaser.png)
 
-> We present GeoCode, a novel framework designed to extend an existing node graph system and significantly lower the bar for the creation of new procedural 3D shape programs. Our approach meticulously balances expressiveness and generalization for part-based shapes.
+> We present GeoCode, a technique for 3D shape synthesis using an intuitively editable parameter space. We build a novel program that enforces a complex set of rules and enables users to perform intuitive and controlled high-level edits that procedurally propagate at a low level to the entire shape. Our program produces high-quality mesh outputs by construction. We use a neural network to map a given point cloud or sketch to our interpretable parameter space. Once produced by our procedural program, shapes can be easily modified. Empirically, we show that GeoCode can infer and recover 3D shapes more accurately compared to existing techniques and we demonstrate its ability to perform controlled local and global shape manipulations.
 
 <p align="center">
-<img src="../Gifs/demo_video_chair.gif" width=250 alt="3D shape recovery"/>
-<img src="../Gifs/demo_video_vase.gif" width=250 alt="3D shape recovery"/>
-<img src="../Gifs/demo_video_table.gif" width=250 alt="3D shape recovery"/>
+<img src="https://github.com/threedle/GeoCode/releases/download/v.1.0.0/demo_video_chair.gif" width=250 alt="3D shape recovery"/>
+<img src="https://github.com/threedle/GeoCode/releases/download/v.1.0.0/demo_video_vase.gif" width=250 alt="3D shape recovery"/>
+<img src="https://github.com/threedle/GeoCode/releases/download/v.1.0.0/demo_video_table.gif" width=250 alt="3D shape recovery"/>
+</p>
+<p align="center">
+A demo video of our program is available on our <a href="https://threedle.github.io/GeoCode/">project page</a>.
 </p>
 
 ## Requirements
@@ -26,8 +34,9 @@
 
 ### Installation
 
-Create the Conda environment
+Clone and create the Conda environment
 ```bash
+git clone https://github.com/threedle/GeoCode.git
 cd GeoCode
 conda env create -f environment.yml
 conda activate geocode
@@ -36,72 +45,21 @@ python setup.py install
 # Install Blender 3.2 under `~/Blender`
 (sudo) chmod +x ./scripts/install_blender3.2.sh
 ./scripts/install_blender3.2.sh
+
+# Download the dataset (`~/datasets`), checkpoint (`~/models`) and blend file (`~/blends`) of the `chair` domain
+python scripts/download_ds.py --domain chair --datasets-dir ~/datasets --models-dir ~/models --blends-dir ~/blends
 ```
 
-### Set up the directories
-
-The datasets, blend files and experiments should be arranged in the following directory structure (example for the `chair` domain):
-
-```
-<datasets-dir>
-│
-└───ChairDataset
-    │
-    └───recipe.yml
-    │
-    └───train
-    │   └───obj_gt
-    │   └───point_cloud_fps     <-- generated upon dataset load (when training or testing)
-    │   └───point_cloud_random  <-- generated upon dataset load (when training or testing)
-    │   └───sketches
-    │   └───yml_gt
-    │   └───yml_gt_normalized   <-- generated upon dataset load (when training or testing)
-    │
-    └───val
-    │   └───obj_gt
-    │   └───...
-    │
-    └───test
-        └───obj_gt
-        └───...
-        
-<models-dir>
-│
-└───exp_geocode_chair  <-- the name you chose for the experiment
-    │
-    └───procedural_chair_epoch500.ckpt  <-- generated during training
-    └───last.ckpt                       <-- generated during training
-
-<blends-dir>
-│
-└───procedural_chair.blend
-```
-
-* The blend files are the programs that are discussed in the paper and are supplied in the supplementary material (under `Programs` directory).
-* We provide a (very) partial dataset for each of the domains due to file size constraints (under `Partial Datasets` directory), which also prevents us from providing any model checkpoint.
-* To create a new dataset, please refer to **Creating a new dataset** later in this README file.
-
-### Run training (1 GPU and 5 CPUs setup is recommended)
-
-Training from a checkpoint or new training is done similarly, and only depends on the existence of a `latest.ckpt` checkpoint file in the experiment directory (under `~/models` in this example).
-Please note that training using our checkpoints will show a starting epoch of 0.
-
-```bash
-cd GeoCode
-conda activate geocode
-python geocode/geocode.py train --models-dir ~/models --dataset-dir ~/datasets/ChairDataset --nepoch=600 --batch_size=33 --input-type pc sketch --exp-name exp_geocode_chair
-```
+`vase` and `table` domains are also available
 
 ### Run the test for the chair domain (1 GPU and 20 CPUs setup is recommended)
 
-Run the test for the `chair` domain using the checkpoint found in the experiment directory `exp_geocode_chair`:
+Run the test for the `chair` domain using the downloaded checkpoint, make sure the directories match the directories that were used in the `download_ds.py` step
 ```bash
 cd GeoCode
 conda activate geocode
 python geocode/geocode.py test --blender-exe ~/Blender/blender-3.2.0-linux-x64/blender --blend-file ~/blends/procedural_chair.blend --models-dir ~/models --dataset-dir ~/datasets/ChairDataset --input-type pc sketch --phase test --exp-name exp_geocode_chair
 ```
-
-Please ignore any warnings such as `Failed to create secure directory (/run/user/<id>/pulse): No such file or directory`
 
 This will generate the results in the following directory structure, in 
 ```
@@ -138,6 +96,17 @@ this will generate the following additional directories under `results_exp_geoco
             └───render_predictions_sketch  <-- renders of the objects predicted from sketch input
 ```
 
+## Run training on our dataset (1 GPU and 5 CPUs setup is recommended)
+
+Training from a checkpoint or new training is done similarly, and only depends on the existence of a `latest.ckpt` checkpoint file in the experiment directory (under `~/models` in this example).
+Please note that training using our checkpoints will show a starting epoch of 0.
+
+```bash
+cd GeoCode
+conda activate geocode
+python geocode/geocode.py train --models-dir ~/models --dataset-dir ~/datasets/ChairDataset --nepoch=600 --batch_size=33 --input-type pc sketch --exp-name exp_geocode_chair
+```
+
 ## Inspecting the blend files
 
 Open one of the Blend files using Blender 3.2.
@@ -162,6 +131,52 @@ First open an account and create a project, create the file `GeoCode/config/nept
 neptune:
   api_token: "<TOKEN>"
   project: "<POJECT_PATH>"
+```
+## Downloading the datasets, blend files, and checkpoint files
+When downloading one or more domain using:
+```bash
+python scripts/download_ds.py --domain chair --datasets-dir ~/datasets --models-dir ~/models --blends-dir ~/blends
+python scripts/download_ds.py --domain vase --datasets-dir ~/datasets --models-dir ~/models --blends-dir ~/blends
+python scripts/download_ds.py --domain table --datasets-dir ~/datasets --models-dir ~/models --blends-dir ~/blends
+```
+
+The resulting directory structure will be (example for the `chair` domain):
+
+```
+<datasets-dir>
+│
+└───ChairDataset
+    │
+    └───recipe.yml
+    │
+    └───train
+    │   └───obj_gt
+    │   └───point_cloud_fps
+    │   └───point_cloud_random
+    │   └───sketches
+    │   └───yml_gt
+    │   └───yml_gt_normalized
+    │
+    └───val
+    │   └───obj_gt
+    │   └───...
+    │
+    └───test
+        └───obj_gt
+        └───...
+        
+<models-dir>
+│
+└───exp_geocode_chair
+    │
+    └───procedural_chair_epoch585_ckpt.zip
+    └───procedural_chair_last_ckpt.zip
+    └───procedural_chair_epoch585.ckpt
+    └───last.ckpt
+
+<blends-dir>
+│
+└───procedural_chair.blend
 ```
 
 ## Visualize the results using multiple GPU nodes in parallel
@@ -222,7 +237,7 @@ cd GeoCode
 
 You can also run this in parallel, for example, with 10 processes, by adding the flags `--parallel 10 --mod $NODE_ID`
 
-Once you train on the new dataset, a preprocessing step of the dataset will be performed. The point cloud sampling and normalized label directories and files will be created under the dataset directory.
+Once you train on the new dataset, a preprocessing step of the dataset will be performed. The point cloud sampling and normalized label directories and files will be created under the dataset directory. Refer to the `Download the datasets` section at the top of this readme for the directory structure.
 
 
 ## Stability metric (20 CPUs setup is recommended)
@@ -239,9 +254,15 @@ In our tests we also used [COSEG dataset](http://irc.cs.sdu.edu.cn/~yunhai/publi
 - 3D shapes should be in .obj format
 - 3D shapes should be normalized before training or testing
 
-We provide additional scripts that allows working with COSEG dataset or other datasets.
+we provide a command to download an additional script that allows working with COSEG samples.
 Additionally, we provide the code to simplify a dataset (mesh simplification).
-Please refer to the README.md file within the `GeoCode/dataset_processing` directory.
+Please refer to the README.md file that is downloaded along with the scripts after executing the following command:
+
+```bash
+cd GeoCode
+scripts/download_ds_processing_scripts.py
+~/Blender/blender-3.2.0-linux-x64/blender -b --python dataset_processing/prepare_coseg.py -- --help
+```
 
 ## Code structure
 
@@ -251,6 +272,16 @@ Please refer to the README.md file within the `GeoCode/dataset_processing` direc
 - `dataset_processing` - scripts that are intended to manipulate existing datasets
 - `geocode` - main training and testing code
 - `models` - point cloud and sketch encoders and the decoders network
-- `scripts` - contains a script to install Blender
+- `scripts` - contains scripts to set up our datasets and saved checkpoints and installing Blender
 - `stability_metric` - scripts to evaluate a tested phase using our *stability metric*
 - `visualize_results` - script to generate the renders for all ground truth and predicted shapes
+
+# Citation
+```
+@article{pearl2022geocode,
+  title={GeoCode: Interpretable Shape Programs},
+  author={Pearl, Ofek and Lang, Itai and Hu, Yuhua and Yeh, Raymond A. and Hanocka, Rana},
+  booktitle={arXiv preprint arxiv:2212.11715},
+  year={2022}
+}
+```

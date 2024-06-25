@@ -21,6 +21,8 @@ def face_areas_normals(faces, vs):
 def sample_surface(faces, vertices, num_points=1000):
     """
     sample mesh surface
+    sample method:
+    http://mathworld.wolfram.com/TrianglePointPicking.html
     Args
     ---------
     vertices: vertices

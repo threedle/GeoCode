@@ -41,4 +41,5 @@ neptune_session.json
 *.egg_inf
 lightning_logs/
 stability_results.json
+dataset_processing/
 docs/
