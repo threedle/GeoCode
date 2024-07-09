@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import gdown
 import zipfile
 import hashlib
 import requests
@@ -36,17 +35,17 @@ def download_ds(args):
 
     if args.domain == Domain.chair:
         md5 = "27c283fa6893b23400a9bba6aca92854"
-        ds_url = "https://drive.google.com/uc?id=1Mmq1dVuMjoTZxtcC2wm4qMnIIeI_0OI-"
+        ds_url = "https://figshare.com/ndownloader/files/39487282?private_link=d06bff0ae6b0c710bec8"
         ds_zip_file_name = "ChairDataset.zip"
         best_epoch = 585
     elif args.domain == Domain.vase:
         md5 = "1200bfb9552513ea6c9a3b9050af470e"
-        ds_url = "https://drive.google.com/uc?id=1nCK4Jx2uIKcK5hubhKN29b8-OxdASEfl"
+        ds_url = "https://figshare.com/ndownloader/files/39487153?private_link=1b30f4105c0518ce9071"
         ds_zip_file_name = "VaseDataset.zip"
         best_epoch = 573
     elif args.domain == Domain.table:
         md5 = "c7a0fc73c2b3f39dcd02f8cd3380d9dd"
-        ds_url = "https://drive.google.com/uc?id=1W8s5MvNKPY56wKB0QJA-7VIqFBMd-U2k"
+        ds_url = "https://figshare.com/ndownloader/files/39487033?private_link=53f9de1359c3e3cc3218"
         ds_zip_file_name = "TableDataset.zip"
         best_epoch = 537
     else:
@@ -56,7 +55,7 @@ def download_ds(args):
         target_ds_zip_file_path = datasets_dir.joinpath(ds_zip_file_name)
         # download requested dataset zip file from Google Drive
         if not target_ds_zip_file_path.is_file():
-            gdown.download(ds_url, str(target_ds_zip_file_path), quiet=False)
+            download_file(ds_url, target_ds_zip_file_path)
         else:
             print(f"Skipping downloading dataset from Google Drive, file [{target_ds_zip_file_path}] already exists.")
 
