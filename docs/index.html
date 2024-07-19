@@ -72,7 +72,7 @@
             <span class="author-block">
               <a href="https://itailang.github.io/">Itai Lang</a><sup>2</sup>,</span>
             <span class="author-block">
-              <a href="https://yuhuahu310.github.io/">Yuhua Hu</a><sup>2</sup>,
+              <a href="https://github.com/yuhuahu310">Yuhua Hu</a><sup>2</sup>,
             </span>
             <span class="author-block">
               <a href="https://raymond-yeh.com/">Raymond A. Yeh</a><sup>3</sup>,
@@ -201,8 +201,7 @@
         <h2 class="title is-3">Abstract</h2>
         <div class="content has-text-justified">
           <p>
-            Mapping high-fidelity 3D geometry to a representation that allows for intuitive edits remains an elusive goal in computer vision and graphics. The key challenge is the need to model both continuous and discrete shape variations. Current approaches, such as implicit shape representation, lack straightforward interpretable encoding, while others that employ procedural methods output coarse geometry.
-            We present <span class="dnerf">GeoCode</span>, a technique for 3D shape synthesis using an intuitively editable parameter space. We build a novel program that enforces a complex set of rules and enables users to perform intuitive and controlled high-level edits that procedurally propagate at a low level to the entire shape. Our program produces high-quality mesh outputs by construction. We use a neural network to map a given point cloud or sketch to our interpretable parameter space. Once produced by our procedural program, shapes can be easily modified. Empirically, we show that <span class="dnerf">GeoCode</span> can infer and recover 3D shapes more accurately compared to existing techniques and we demonstrate its ability to perform controlled local and global shape manipulations.
+            The task of crafting procedural programs capable of generating structurally valid 3D shapes easily and intuitively remains an elusive goal in computer vision and graphics. Within the graphics community, generating procedural 3D models has shifted to using node graph systems. They allow the artist to create complex shapes and animations through visual programming. Being a high-level design tool, they made procedural 3D modeling more accessible. However, crafting those node graphs demands expertise and training. We present <span class="dnerf">GeoCode</span>, a novel framework designed to extend an existing node graph system and significantly lower the bar for the creation of new procedural 3D shape programs. Our approach meticulously balances expressiveness and generalization for part-based shapes. We propose a curated set of new geometric building blocks that are expressive and reusable across domains. We showcase three innovative and expressive programs developed through our technique and geometric building blocks. Our programs enforce intricate rules, empowering users to execute intuitive high-level parameter edits that seamlessly propagate throughout the entire shape at a lower level while maintaining its validity. To evaluate the user-friendliness of our geometric building blocks among non-experts, we conduct a user study that demonstrates their ease of use and highlights their applicability across diverse domains. Empirical evidence shows the superior accuracy of <span class="dnerf">GeoCode</span> in inferring and recovering 3D shapes compared to an existing competitor. Furthermore, our method demonstrates superior expressiveness compared to alternatives that utilize coarse primitives. Notably, we illustrate the ability to execute controllable local and global shape manipulations.
           </p>
         </div>
       </div>
@@ -230,14 +229,14 @@
     <!-- Structural integrity -->
     <div class="columns is-centered">
       <div class="column is-full-width">
-        <h2 class="title is-3">Our Shape Program</h2>
+        <h2 class="title is-3">Our Shape Programs</h2>
 
         <div class="content has-text-justified">
           <p>
-            We build a novel program that enforces a complex set of rules and enables users to perform intuitive and controlled high-level edits that procedurally propagate at a low-level to the entire shape. In our program, changing a  human-interpretable parameter produces a set of low-level instructions which ensure the modified shape is structurally valid. Our program produces a high-quality and intuitively editable 3D mesh by construction.
+            We build three novel programs that enforce a complex set of rules and enables users to perform intuitive and controlled high-level edits that procedurally propagate at a low-level to the entire shape. In our shape programs, changing a human-interpretable parameter produces a set of low-level instructions which ensure the modified shape is structurally valid. Our programs produce a high-quality and intuitively editable 3D meshes by construction.
           </p>
           <p>
-            For example, given the input shape (left), modifying the seat in isolation will lead to an undesirable result (middle). Our program (right) properly propagates the edit to the remainder of the shape.
+            For example, in our chair program, given the input shape (left), modifying the seat in isolation will lead to an undesirable result (middle). Our program (right) properly propagates the edit to the remainder of the shape.
           </p>
         </div>
         <div class="content has-text-centered">
@@ -254,7 +253,7 @@
 
         <div class="content has-text-justified">
           <p>
-            Our program is implemented as a directed acyclic graph (DAG) comprised of operation nodes and edges. Selected operation nodes are parameterized by the input parameters, allowing the user to interact with the program and control the resulting shape. The operations are chained together, receive, process and then pass the information along their edges, and model shape elements and inter-part influences. The program has a single final node, which outputs a mesh.
+            Our programs are implemented in Blender Geometry Nodes as a directed acyclic graph (DAG) comprised of nodes and edges. Selected operation nodes are parameterized by the input parameters, allowing the user to interact with the programs and control the resulting shapes. Using our curves, attachment points, and triples methodology, we provide a Blender add-on aimed to lower the bar for the generation of new shape programs by non-experts.
           </p>
         </div>
         <div class="content has-text-centered">
@@ -271,7 +270,7 @@
 
         <div class="content has-text-justified">
           <p>
-            <span class="dnerf">GeoCode</span> learns to map a point cloud or a sketch input to an intuitively editable parameter space. The input passes through the corresponding encoder to obtain an embedding vector which is then fed to a set of decoders that predict the interpretable parameters. The program enforces a set of rules that, given a parameter representation, produces a high-quality shape by construction.
+            <span class="dnerf">GeoCode</span> learns to map a point cloud or a sketch input to an intuitively editable parameter space of the program. The input passes through the corresponding encoder to obtain an embedding vector which is then fed to a set of decoders that predict the interpretable parameters. The program enforces a set of rules that, given a parameter representation, produces a high-quality shape by construction.
           </p>
         </div>
         <div class="content has-text-centered">
