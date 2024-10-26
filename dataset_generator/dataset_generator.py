@@ -2,6 +2,7 @@
 
 import sys
 import bpy
+import copy
 import time
 import yaml
 import json
@@ -40,8 +41,14 @@ from dataset_generator.shape_validators.shape_validator_factory import ShapeVali
 
 def shape_to_yml(gnodes_mod):
     shape_yml_obj = {}
-    for input in gnodes_mod.node_group.inputs:
+    # get an arbitrary "Group Input" node
+    group_input_nodes = [node for node in gnodes_mod.node_group.nodes if node.type == 'GROUP_INPUT']
+    assert len(group_input_nodes) > 0
+    group_input_node = group_input_nodes[0]
+    for input in group_input_node.outputs:
         param_name = str(input.name)
+        if len(param_name) == 0:
+            continue
         param_val = gnodes_mod[input.identifier]
         if input.bl_label == "Vector":
             shape_yml_obj[param_name] = {}
@@ -84,17 +91,29 @@ def json_hash(json_obj):
     return hashlib.md5(json.dumps(json_obj).encode("utf-8")).hexdigest().strip()
 
 
-def update_recipe_yml_obj_with_metadata(recipe_yml_obj, gnodes_mod):
+def update_recipe_yml_obj_with_metadata(recipe_yml_obj, gnodes_mod, write_dataset_generation=False):
     # loops through all the inputs in the geometric node group
     data_types = {}
-    for input in gnodes_mod.node_group.inputs:
+    group_input_nodes = [node for node in gnodes_mod.node_group.nodes if node.type == 'GROUP_INPUT']
+    assert len(group_input_nodes) > 0
+    group_input_node = group_input_nodes[0]
+    for input in group_input_node.outputs:
         param_name = str(input.name)
+        if len(param_name) == 0:
+            continue
         data_types[param_name] = {}
         data_types[param_name]['type'] = input.bl_label
         if input.bl_label != 'Boolean':
-            data_types[param_name]['min'] = input.min_value
-            data_types[param_name]['max'] = input.max_value
+            data_types[param_name]['min'] = gnodes_mod.node_group.interface.items_tree[param_name].min_value
+            data_types[param_name]['max'] = gnodes_mod.node_group.interface.items_tree[param_name].max_value
     recipe_yml_obj['data_types'] = data_types
+    if write_dataset_generation:
+        dataset_generation = copy.deepcopy(data_types)
+        for param_name in dataset_generation:
+            if dataset_generation[param_name]['type'] not in ['Boolean', 'Integer']:
+                dataset_generation[param_name]['samples'] = 5
+            del dataset_generation[param_name]['type']
+        recipe_yml_obj['dataset_generation'] = dataset_generation
 
 
 def generate_dataset(domain, dataset_dir: Path, phase, random_shapes_per_value, parallel=1, mod=None):
@@ -303,8 +322,13 @@ def main_generate_dataset_parallel(args, blender_exe, blend_file):
         input_params_map = get_input_param_map(gnodes_mod, recipe_yml_obj)
         # loops through all the inputs in the geometric node group
         data_types = {}
-        for input in gnodes_mod.node_group.inputs:
+        group_input_nodes = [node for node in gnodes_mod.node_group.nodes if node.type == 'GROUP_INPUT']
+        assert len(group_input_nodes) > 0
+        group_input_node = group_input_nodes[0]
+        for input in group_input_node.outputs:
             param_name = str(input.name)
+            if len(param_name) == 0:
+                continue
             data_types[param_name] = {}
             data_types[param_name]['type'] = input.bl_label
             if input.bl_label != 'Boolean':

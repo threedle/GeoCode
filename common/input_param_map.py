@@ -90,12 +90,17 @@ def calculate_step(min_value, max_value, samples):
 def get_input_param_map(gnodes_mod, yml):
     input_params_map = {}
     # loops through all the inputs in the geometric node group
+    group_input_nodes = [node for node in gnodes_mod.node_group.nodes if node.type == 'GROUP_INPUT']
+    assert len(group_input_nodes) > 0
+    group_input_node = group_input_nodes[0]
+    param_names = [param_name for param_name in group_input_node.outputs if len(param_name) > 0]
     for param_name in yml['dataset_generation']:
-        if param_name not in gnodes_mod.node_group.inputs:
+        if param_name not in param_names:
             raise Exception(f"Parameter named [{param_name}] was not found in geometry nodes input group.")
-    for input in gnodes_mod.node_group.inputs:
+    for input in group_input_node.outputs:
         param_name = str(input.name)
-
+        if len(param_name) == 0:
+            continue
         # we only change inputs that are explicitly noted in the yaml object
         if param_name in yml['dataset_generation']:
             param_gen_rule = yml['dataset_generation'][param_name]
@@ -120,8 +125,13 @@ def yml_to_shape(shape_yml_obj, input_params_map, ignore_sanity_check=False):
         gnodes_mod = get_geometric_nodes_modifier(obj)
 
         # loops through all the inputs in the geometric node group
-        for input in gnodes_mod.node_group.inputs:
+        group_input_nodes = [node for node in gnodes_mod.node_group.nodes if node.type == 'GROUP_INPUT']
+        assert len(group_input_nodes) > 0
+        group_input_node = group_input_nodes[0]
+        for input in group_input_node.outputs:
             param_name = str(input.name)
+            if len(param_name) == 0:
+                continue
             if param_name not in shape_yml_obj:
                 continue
             param_val = shape_yml_obj[param_name]

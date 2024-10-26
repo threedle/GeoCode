@@ -43,8 +43,8 @@ conda activate geocode
 python setup.py install
 
 # Install Blender 3.2 under `~/Blender`
-(sudo) chmod +x ./scripts/install_blender3.2.sh
-./scripts/install_blender3.2.sh
+(sudo) chmod +x ./scripts/install_blender4.2.sh
+./scripts/install_blender4.2.sh
 
 # Download the dataset (`~/datasets`), checkpoint (`~/models`) and blend file (`~/blends`) of the `chair` domain
 python scripts/download_ds.py --domain chair --datasets-dir ~/datasets --models-dir ~/models --blends-dir ~/blends
