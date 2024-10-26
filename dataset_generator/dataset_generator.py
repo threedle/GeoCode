@@ -163,6 +163,7 @@ def generate_dataset(domain, dataset_dir: Path, phase, random_shapes_per_value, 
         shape_validator = ShapeValidatorFactory.create_validator(domain)
 
         num_disqualified = 0
+        num_intersections = 0
         
         existing_samples = {}
         for curr_param_name, curr_input_param in input_params_map.items():
@@ -206,12 +207,12 @@ def generate_dataset(domain, dataset_dir: Path, phase, random_shapes_per_value, 
 
                     if not param_descriptors.check_constraints(param_values_map):
                         num_disqualified += 1
-                        with open(f'./retry_{mod}.log', 'a') as f:
+                        with open(f'{dataset_dir}/retry_{mod}.log', 'a') as f:
                             f.write(f'constraints {file_name}\n')
                         continue
 
                     if not param_descriptors_map[curr_param_name].is_visible(param_values_map):
-                        with open(f'./retry_{mod}.log', 'a') as f:
+                        with open(f'{dataset_dir}/retry_{mod}.log', 'a') as f:
                             f.write(f'visibility conditions {file_name} [{param_descriptors_map[curr_param_name].visibility_condition}] \n')
                         continue
 
@@ -227,7 +228,9 @@ def generate_dataset(domain, dataset_dir: Path, phase, random_shapes_per_value, 
                     is_valid, msg = shape_validator.validate_shape(input_params_map)
                     if not is_valid:
                         num_disqualified += 1
-                        with open(f'./retry_{mod}.log', 'a') as f:
+                        if 'intersect' in msg.lower():
+                            num_intersections += 1
+                        with open(f'{dataset_dir}/retry_{mod}.log', 'a') as f:
                             f.write(f'Shape invalid with message [{msg}] for file {file_name}\n')
                         continue
 
@@ -241,7 +244,7 @@ def generate_dataset(domain, dataset_dir: Path, phase, random_shapes_per_value, 
                     sample_hash = json_hash(shape_yml)
                     if sample_hash in existing_samples:
                         dup_hashes_attempts.append(sample_hash)
-                        with open(f'./retry_{mod}.log', 'a') as f:
+                        with open(f'{dataset_dir}/retry_{mod}.log', 'a') as f:
                             f.write(f'already exists {sample_hash} {file_name}\n')
                         continue
                     existing_samples[sample_hash] = file_name
@@ -267,10 +270,11 @@ def generate_dataset(domain, dataset_dir: Path, phase, random_shapes_per_value, 
 
         existing_samples['metadata'] = {}
         existing_samples['metadata']['num_disqualified'] = num_disqualified
+        existing_samples['metadata']['num_intersections'] = num_intersections
         return existing_samples
 
     except Exception as e:
-        with open(f'./err_{mod}.log', 'a') as f:
+        with open(f'{dataset_dir}/err_{mod}.log', 'a') as f:
             f.write(repr(e))
             f.write('\n')
             f.write(traceback.format_exc())
@@ -352,6 +356,7 @@ def main_generate_dataset_parallel(args, blender_exe, blend_file):
 
             existing_samples = {}
             num_disqualified = 0
+            num_intersections = 0
             # add all the samples hashes from any other phase to avoid duplicates with other phases
             sample_hashes_json_file_path = dataset_dir.joinpath("sample_hashes.json")
             if sample_hashes_json_file_path.is_file():
@@ -359,6 +364,7 @@ def main_generate_dataset_parallel(args, blender_exe, blend_file):
                     existing_samples = json.load(existing_samples_file)
                     if args.phase in existing_samples:
                         num_disqualified = existing_samples[args.phase]['metadata']['num_disqualified']
+                        num_intersections = existing_samples[args.phase]['metadata']['num_intersections']
             # clear any current phase sample hashes as they are added by the processes
             existing_samples[args.phase] = {}
 
@@ -367,6 +373,7 @@ def main_generate_dataset_parallel(args, blender_exe, blend_file):
                 with open(single_process_existing_samples_json_file_path, 'r') as single_process_existing_samples_json_file:
                     single_process_existing_samples = json.load(single_process_existing_samples_json_file)
                     num_disqualified += single_process_existing_samples['metadata']['num_disqualified']
+                    num_intersections += existing_samples[args.phase]['metadata']['num_intersections']
                     print(single_process_existing_samples_json_file_path)
                     print(single_process_existing_samples)
                     for hash, file_name in single_process_existing_samples.items():
@@ -383,6 +390,7 @@ def main_generate_dataset_parallel(args, blender_exe, blend_file):
 
             existing_samples[args.phase]['metadata'] = {}
             existing_samples[args.phase]['metadata']['num_disqualified'] = num_disqualified
+            existing_samples[args.phase]['metadata']['num_intersections'] = num_intersections
 
             # delete the duplicated files so they will be regenerated
             if duplicates:

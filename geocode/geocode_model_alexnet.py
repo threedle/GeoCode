@@ -349,7 +349,8 @@ class Model(pl.LightningModule):
             file_name, pc, targets, shape = test_batch
         elif self.test_dataloaders_types[dataloader_idx] == 'sketch':
             file_name, sketch_camera_angle, sketch, targets, shape = test_batch
-            if self.discrete or self.continuous:
+            if shape and (self.discrete or self.continuous):
+                # the existence of "shape" means we have ground truth target values
                 targets = targets.float()
                 targets = targets[:, self.params_indices]
         else:
@@ -460,4 +461,3 @@ class Model(pl.LightningModule):
                 barplot_data_file_path = f'{self.models_dir}/{self.exp_name}/test_barplot_top_{top_k + 1}.json'
                 with open(barplot_data_file_path, 'w') as barplot_data_file:
                     json.dump(barplot_data, barplot_data_file)
-
