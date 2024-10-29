@@ -93,7 +93,7 @@ def get_input_param_map(gnodes_mod, yml):
     group_input_nodes = [node for node in gnodes_mod.node_group.nodes if node.type == 'GROUP_INPUT']
     assert len(group_input_nodes) > 0
     group_input_node = group_input_nodes[0]
-    param_names = [param_name for param_name in group_input_node.outputs if len(param_name) > 0]
+    param_names = [input.name for input in group_input_node.outputs if len(input.name) > 0]
     for param_name in yml['dataset_generation']:
         if param_name not in param_names:
             raise Exception(f"Parameter named [{param_name}] was not found in geometry nodes input group.")
