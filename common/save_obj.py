@@ -34,8 +34,9 @@ def save_obj_from_yml(args):
     target_obj_file_path = Path(args.target_obj_file_path)
     assert target_obj_file_path.suffix == ".obj"
     clean_scene(start_with_strings=["Camera", "Light"])
-    bpy.context.scene.view_layers['View Layer'].layer_collection.children['Main'].hide_viewport = False
-    bpy.context.scene.view_layers['View Layer'].layer_collection.children['Main'].exclude = False
+    assert 'Main' in bpy.context.view_layer.layer_collection.children, "The procedural shape must be inside a collection called 'Main'"
+    bpy.context.view_layer.layer_collection.children['Main'].hide_viewport = False
+    bpy.context.view_layer.layer_collection.children['Main'].exclude = False
     obj = select_shape()
     gnodes_mod = get_geometric_nodes_modifier(obj)
     recipe_yml = get_recipe_yml_obj(args.recipe_file_path)
