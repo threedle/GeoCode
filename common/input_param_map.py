@@ -47,12 +47,14 @@ class InputParam:
         return res.replace(" ", "_")
 
 
-def get_input_values(input, yml_gen_rule):
+def get_input_values(gnodes_mod, input, yml_gen_rule):
     min_value = None
     max_value = None
+    param_name = input.name
     if input.bl_label != 'Boolean':
-        min_value = input.min_value
-        max_value = input.max_value
+        # TODO(ofekp): find something simpler that works for Blender4.2,  input.min_value no longer works
+        min_value = gnodes_mod.node_group.interface.items_tree[param_name].min_value
+        max_value = gnodes_mod.node_group.interface.items_tree[param_name].max_value
     # override min and max with requested values from recipe yml file
     if 'min' in yml_gen_rule:
         requested_min_value = yml_gen_rule['min']
@@ -109,10 +111,10 @@ def get_input_param_map(gnodes_mod, yml):
                 for idx, axis in enumerate(['x', 'y', 'z']):
                     if not axis in param_gen_rule:
                         continue
-                    curr_param_values = get_input_values(input, param_gen_rule[axis])
+                    curr_param_values = get_input_values(gnodes_mod, input, param_gen_rule[axis])
                     input_params_map[f"{param_name} {axis}"] = InputParam(gnodes_mod, input, axis, curr_param_values)
             else:
-                curr_param_values = get_input_values(input, param_gen_rule)
+                curr_param_values = get_input_values(gnodes_mod, input, param_gen_rule)
                 input_params_map[param_name] = InputParam(gnodes_mod, input, None, curr_param_values)
     return input_params_map
 
