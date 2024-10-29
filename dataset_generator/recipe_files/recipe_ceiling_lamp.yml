@@ -1,0 +1,180 @@
+base:
+  base_roundness: 0.5400000214576721
+  base_thickness: 0.07000000029802322
+  base_profile_type: 1
+  base_profile_strength: 0.6800000071525574
+  base_x: 0.5499999523162842
+  base_y: 0.6000000238418579
+  light_frame_count: 8
+  light_frame_radius: 0.7900000214576721
+  light_frame_thickness_x: 0.03999999910593033
+  light_frame_thickness_y: 0.019999999552965164
+  light_frame_roundness: 0.6399999856948853
+  light_frame_style: 0.5
+  lightbulb_ radius: 0.07999999821186066
+  light_frame_mid_point_pos: 0.5160000324249268
+  light_frame_mid_point_offset_y: 0.1459999680519104
+  light_frame_mid_point_offset_z: 0.9339999556541443
+  light_frame_turning_effect: 0.5
+  light_frame_end_point_y: 0.1459999978542328
+  light_frame_end_point_z: 0.23800000548362732
+dataset_generation:
+  base_roundness:
+    min: 0.0
+    max: 1.0
+    samples: 5
+  base_thickness:
+    min: 0.009999999776482582
+    max: 0.17000000178813934
+    samples: 5
+  base_profile_type:
+    min: 0
+    max: 3
+  base_profile_strength:
+    min: 0.0
+    max: 1.0
+    samples: 5
+  base_x:
+    min: 0.029999999329447746
+    max: 1.0
+    samples: 5
+  base_y:
+    min: 0.029999999329447746
+    max: 1.0
+    samples: 5
+  light_frame_count:
+    min: 1
+    max: 8
+  light_frame_radius:
+    min: 0.0
+    max: 1.0
+    samples: 5
+  light_frame_thickness_x:
+    min: 0.019999999552965164
+    max: 0.11999999731779099
+    samples: 5
+  light_frame_thickness_y:
+    min: 0.019999999552965164
+    max: 0.11999999731779099
+    samples: 5
+  light_frame_roundness:
+    min: 0.0
+    max: 1.0
+    samples: 5
+  light_frame_style:
+    min: 0.0
+    max: 1.0
+    samples: 5
+  lightbulb_ radius:
+    min: 0.019999999552965164
+    max: 0.10000000149011612
+    samples: 5
+  light_frame_mid_point_pos:
+    min: 0.0
+    max: 1.0
+    samples: 5
+  light_frame_mid_point_offset_y:
+    min: 0.0
+    max: 1.0
+    samples: 5
+  light_frame_mid_point_offset_z:
+    min: 0.0
+    max: 1.0
+    samples: 5
+  light_frame_turning_effect:
+    min: 0.0
+    max: 1.0
+    samples: 5
+  light_frame_end_point_y:
+    min: 0.0
+    max: 0.5
+    samples: 5
+  light_frame_end_point_z:
+    min: 0.11999999731779099
+    max: 0.5
+    samples: 5
+camera_angles_train:
+- - -30.0
+  - 35.0
+- - -30.0
+  - 55.0
+camera_angles_test:
+- - -30.0
+  - 15.0
+data_types:
+  base_roundness:
+    type: Float
+    min: 0.0
+    max: 1.0
+  base_thickness:
+    type: Float
+    min: 0.009999999776482582
+    max: 0.17000000178813934
+  base_profile_type:
+    type: Integer
+    min: 0
+    max: 3
+  base_profile_strength:
+    type: Float
+    min: 0.0
+    max: 1.0
+  base_x:
+    type: Float
+    min: 0.029999999329447746
+    max: 1.0
+  base_y:
+    type: Float
+    min: 0.029999999329447746
+    max: 1.0
+  light_frame_count:
+    type: Integer
+    min: 1
+    max: 8
+  light_frame_radius:
+    type: Float
+    min: 0.0
+    max: 1.0
+  light_frame_thickness_x:
+    type: Float
+    min: 0.019999999552965164
+    max: 0.11999999731779099
+  light_frame_thickness_y:
+    type: Float
+    min: 0.019999999552965164
+    max: 0.11999999731779099
+  light_frame_roundness:
+    type: Float
+    min: 0.0
+    max: 1.0
+  light_frame_style:
+    type: Float
+    min: 0.0
+    max: 1.0
+  lightbulb_ radius:
+    type: Float
+    min: 0.019999999552965164
+    max: 0.10000000149011612
+  light_frame_mid_point_pos:
+    type: Float
+    min: 0.0
+    max: 1.0
+  light_frame_mid_point_offset_y:
+    type: Float
+    min: 0.0
+    max: 1.0
+  light_frame_mid_point_offset_z:
+    type: Float
+    min: 0.0
+    max: 1.0
+  light_frame_turning_effect:
+    type: Float
+    min: 0.0
+    max: 1.0
+  light_frame_end_point_y:
+    type: Float
+    min: 0.0
+    max: 0.5
+  light_frame_end_point_z:
+    type: Float
+    min: 0.11999999731779099
+    max: 0.5
