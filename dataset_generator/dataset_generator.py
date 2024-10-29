@@ -336,8 +336,8 @@ def main_generate_dataset_parallel(args, blender_exe, blend_file):
             data_types[param_name] = {}
             data_types[param_name]['type'] = input.bl_label
             if input.bl_label != 'Boolean':
-                data_types[param_name]['min'] = input.min_value
-                data_types[param_name]['max'] = input.max_value
+                data_types[param_name]['min'] = gnodes_mod.node_group.interface.items_tree[param_name].min_value
+                data_types[param_name]['max'] = gnodes_mod.node_group.interface.items_tree[param_name].max_value
         recipe_yml_obj['data_types'] = data_types
         inputs_to_eval = list(input_params_map.keys())
         param_descriptors = ParamDescriptors(recipe_yml_obj, inputs_to_eval)
