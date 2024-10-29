@@ -87,8 +87,8 @@ def visualize_results(args):
         clean_scene(start_with_strings=["Camera", "Light"])
         setup_lights()
         # hide the main collections
-        bpy.context.scene.view_layers['View Layer'].layer_collection.children['Main'].hide_viewport = True
-        bpy.context.scene.view_layers['View Layer'].layer_collection.children['Main'].exclude = True
+        bpy.context.view_layer.layer_collection.children['Main'].hide_viewport = True
+        bpy.context.view_layer.layer_collection.children['Main'].exclude = True
         for obj_dir, render_dir, title in work:
             file_names = sorted([f.stem for f in obj_dir.glob("*.obj")])
             if args.parallel > 1:

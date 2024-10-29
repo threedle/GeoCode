@@ -285,8 +285,8 @@ def main_generate_dataset_single_proc(args, blender_exe, blend_file):
     assert blender_exe
     assert blend_file
     # show the main collections (if it is already shown, there is no effect)
-    bpy.context.scene.view_layers['View Layer'].layer_collection.children['Main'].hide_viewport = False
-    bpy.context.scene.view_layers['View Layer'].layer_collection.children['Main'].exclude = False
+    bpy.context.view_layer.layer_collection.children['Main'].hide_viewport = False
+    bpy.context.view_layer.layer_collection.children['Main'].exclude = False
 
     try:
         dataset_dir = Path(args.dataset_dir).expanduser()

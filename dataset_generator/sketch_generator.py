@@ -154,8 +154,8 @@ if __name__ == "__main__":
     args = parser.parse_args(argv)
 
     # hide the main collections (if it is already hidden, there is no effect)
-    bpy.context.scene.view_layers['View Layer'].layer_collection.children['Main'].hide_viewport = True
-    bpy.context.scene.view_layers['View Layer'].layer_collection.children['Main'].exclude = True
+    bpy.context.view_layer.layer_collection.children['Main'].hide_viewport = True
+    bpy.context.view_layer.layer_collection.children['Main'].exclude = True
 
     dataset_dir = Path(args.dataset_dir).expanduser()
     phases = args.phases
