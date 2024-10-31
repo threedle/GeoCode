@@ -273,10 +273,9 @@ def generate_dataset(domain, dataset_dir: Path, phase, random_shapes_per_value, 
                 dup_hashes_attempts_file.writelines([f"{h}\n" for h in dup_hashes_attempts])
                 dup_hashes_attempts_file.write('---\n')
 
-        existing_samples[phase] = {}
-        existing_samples[phase]['metadata'] = {}
-        existing_samples[phase]['metadata']['num_disqualified'] = num_disqualified
-        existing_samples[phase]['metadata']['num_intersections'] = num_intersections
+        existing_samples['metadata'] = {}
+        existing_samples['metadata']['num_disqualified'] = num_disqualified
+        existing_samples['metadata']['num_intersections'] = num_intersections
         return existing_samples
 
     except Exception as e:
@@ -379,7 +378,7 @@ def main_generate_dataset_parallel(args, blender_exe, blend_file):
                 with open(single_process_existing_samples_json_file_path, 'r') as single_process_existing_samples_json_file:
                     single_process_existing_samples = json.load(single_process_existing_samples_json_file)
                     num_disqualified += single_process_existing_samples['metadata']['num_disqualified']
-                    num_intersections += existing_samples[args.phase]['metadata']['num_intersections']
+                    num_intersections += single_process_existing_samples['metadata']['num_intersections']
                     print(single_process_existing_samples_json_file_path)
                     print(single_process_existing_samples)
                     for hash, file_name in single_process_existing_samples.items():
