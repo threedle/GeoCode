@@ -33,7 +33,7 @@ def save_obj(target_obj_file_path: Union[Path, str], additional_objs_to_save=Non
         for additional_obj in additional_objs_to_save:
             additional_obj.select_set(True)
     # save
-    bpy.ops.export_scene.obj(filepath=str(target_obj_file_path), use_selection=True, use_materials=False, use_triangles=True)
+    bpy.ops.wm.obj_export(filepath=str(target_obj_file_path), export_selected_objects=True, export_materials=False, export_triangulated_mesh=True)
     return dup_obj
 
 
