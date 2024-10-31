@@ -38,6 +38,11 @@ from common.input_param_map import get_input_param_map, randomize_all_params, ym
 from dataset_generator.shape_validators.common_validations import object_sanity_check
 from dataset_generator.shape_validators.shape_validator_factory import ShapeValidatorFactory
 
+import random
+import numpy as np
+random.seed(61)
+np.random.seed(32)
+
 
 def shape_to_yml(gnodes_mod):
     shape_yml_obj = {}
@@ -268,9 +273,10 @@ def generate_dataset(domain, dataset_dir: Path, phase, random_shapes_per_value, 
                 dup_hashes_attempts_file.writelines([f"{h}\n" for h in dup_hashes_attempts])
                 dup_hashes_attempts_file.write('---\n')
 
-        existing_samples['metadata'] = {}
-        existing_samples['metadata']['num_disqualified'] = num_disqualified
-        existing_samples['metadata']['num_intersections'] = num_intersections
+        existing_samples[phase] = {}
+        existing_samples[phase]['metadata'] = {}
+        existing_samples[phase]['metadata']['num_disqualified'] = num_disqualified
+        existing_samples[phase]['metadata']['num_intersections'] = num_intersections
         return existing_samples
 
     except Exception as e:
