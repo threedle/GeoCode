@@ -129,9 +129,9 @@ def generate_dataset(domain, dataset_dir: Path, phase, random_shapes_per_value, 
     """
     try:
         # all other processes must wait for the folder to be created before continuing
-        phase_dir = dataset_dir.joinpath(phase)
-        yml_gt_dir = phase_dir.joinpath('yml_gt')
-        obj_gt_dir = phase_dir.joinpath('obj_gt')
+        phase_dir = dataset_dir / phase
+        yml_gt_dir = phase_dir / 'yml_gt'
+        obj_gt_dir = phase_dir / 'obj_gt'
         if parallel > 1 and mod != 0:
             while not (dataset_dir.is_dir() and phase_dir.is_dir() and yml_gt_dir.is_dir() and obj_gt_dir.is_dir()):
                 time.sleep(2)
@@ -153,7 +153,7 @@ def generate_dataset(domain, dataset_dir: Path, phase, random_shapes_per_value, 
 
         if parallel <= 1:
             # save the recipe object as yml file in the dataset main dir (since it now also contains additional required metadata)
-            target_recipe_file_path = dataset_dir.joinpath('recipe.yml')
+            target_recipe_file_path = dataset_dir / 'recipe.yml'
             save_yml(recipe_yml_obj, target_recipe_file_path)
 
         yml_gt_dir.mkdir(exist_ok=True)
@@ -182,8 +182,8 @@ def generate_dataset(domain, dataset_dir: Path, phase, random_shapes_per_value, 
 
                     curr_param_value_str_for_file = f"{curr_param_value:.4f}".replace('.', '_')
                     file_name = f"{domain}_{curr_input_param.get_name_for_file()}_{curr_param_value_str_for_file}_{shape_idx:04d}"
-                    obj_file = obj_gt_dir.joinpath(f"{file_name}.obj")
-                    yml_file = yml_gt_dir.joinpath(f"{file_name}.yml")
+                    obj_file = obj_gt_dir / f"{file_name}.obj"
+                    yml_file = yml_gt_dir / f"{file_name}.yml"
                     if obj_file.is_file() and yml_file.is_file() and object_sanity_check(obj_file):
                         with open(yml_file, 'r') as file:
                             param_values_map_from_yml = yaml.load(file, Loader=yaml.FullLoader)
@@ -254,9 +254,9 @@ def generate_dataset(domain, dataset_dir: Path, phase, random_shapes_per_value, 
                         continue
                     existing_samples[sample_hash] = file_name
 
-                    target_yml_file_path = yml_gt_dir.joinpath(f"{file_name}.yml")
+                    target_yml_file_path = yml_gt_dir / f"{file_name}.yml"
                     save_obj_label(gnodes_mod, target_yml_file_path)
-                    target_obj_file_path = obj_gt_dir.joinpath(f"{file_name}.obj")
+                    target_obj_file_path = obj_gt_dir / f"{file_name}.obj"
                     dup_obj = save_obj(target_obj_file_path)
                     # delete the duplicate object
                     select_objs(dup_obj)
@@ -268,7 +268,7 @@ def generate_dataset(domain, dataset_dir: Path, phase, random_shapes_per_value, 
 
         # log duplicate attempts
         if dup_hashes_attempts:
-            dup_hashes_attempts_file_path = dataset_dir.joinpath(f"dup_hashes_attempts_{mod}.txt")
+            dup_hashes_attempts_file_path = dataset_dir / f"dup_hashes_attempts_{mod}.txt"
             with open(dup_hashes_attempts_file_path, 'a') as dup_hashes_attempts_file:
                 dup_hashes_attempts_file.writelines([f"{h}\n" for h in dup_hashes_attempts])
                 dup_hashes_attempts_file.write('---\n')
@@ -297,7 +297,7 @@ def main_generate_dataset_single_proc(args, blender_exe, blend_file):
         dataset_dir = Path(args.dataset_dir).expanduser()
         existing_samples = generate_dataset(args.domain, dataset_dir, args.phase,
                                             args.num_variations, parallel=args.parallel, mod=args.mod)
-        samples_hashes_file_path = dataset_dir.joinpath(f"sample_hashes_{args.mod}.json")
+        samples_hashes_file_path = dataset_dir / f"sample_hashes_{args.mod}.json"
         with open(samples_hashes_file_path, 'w') as samples_hashes_file:
             json.dump(existing_samples, samples_hashes_file)
         print(f"Process [{args.mod}] done")
@@ -310,8 +310,10 @@ def main_generate_dataset_parallel(args, blender_exe, blend_file):
     dataset_dir = Path(args.dataset_dir).expanduser()
     dataset_dir.mkdir(exist_ok=True)
 
-    phase_dir = dataset_dir.joinpath(args.phase)
+    phase_dir = dataset_dir / args.phase
     phase_dir.mkdir(exist_ok=True)
+    yml_gt_dir = phase_dir / 'yml_gt'
+    obj_gt_dir = phase_dir / 'obj_gt'
 
     try:
         for existing_shapes_json_file_path in dataset_dir.glob("sample_hashes_*.json"):
@@ -326,7 +328,7 @@ def main_generate_dataset_parallel(args, blender_exe, blend_file):
         update_base_shape_in_yml(gnodes_mod, recipe_file_path)
         update_recipe_yml_obj_with_metadata(recipe_yml_obj, gnodes_mod)
         # save the recipe.yml file in the dataset's main dir (it now also contains required metadata)
-        target_recipe_file_path = dataset_dir.joinpath('recipe.yml')
+        target_recipe_file_path = dataset_dir / 'recipe.yml'
         save_yml(recipe_yml_obj, target_recipe_file_path)
         input_params_map = get_input_param_map(gnodes_mod, recipe_yml_obj)
         # loops through all the inputs in the geometric node group
@@ -363,7 +365,7 @@ def main_generate_dataset_parallel(args, blender_exe, blend_file):
             num_disqualified = 0
             num_intersections = 0
             # add all the samples hashes from any other phase to avoid duplicates with other phases
-            sample_hashes_json_file_path = dataset_dir.joinpath("sample_hashes.json")
+            sample_hashes_json_file_path = dataset_dir / "sample_hashes.json"
             if sample_hashes_json_file_path.is_file():
                 with open(sample_hashes_json_file_path, 'r') as existing_samples_file:
                     existing_samples = json.load(existing_samples_file)
@@ -402,8 +404,8 @@ def main_generate_dataset_parallel(args, blender_exe, blend_file):
                 print(f"Found [{len(duplicates)}] duplicates that will be regenerated")
                 print("\n\t".join(duplicates))
             for file_name in duplicates:
-                obj_file = phase_dir.joinpath(file_name + ".obj")
-                yml_file = phase_dir.joinpath(file_name + ".yml")
+                obj_file = obj_gt_dir / f"{file_name}.obj"
+                yml_file = yml_gt_dir / f"{file_name}.yml"
                 obj_file.unlink()
                 yml_file.unlink()
 

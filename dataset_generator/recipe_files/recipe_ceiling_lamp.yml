@@ -22,7 +22,7 @@ dataset_generation:
   base_roundness:
     min: 0.0
     max: 1.0
-    samples: 5
+    samples: 6
   base_thickness:
     min: 0.009999999776482582
     max: 0.17000000178813934
@@ -33,22 +33,22 @@ dataset_generation:
   base_profile_strength:
     min: 0.0
     max: 1.0
-    samples: 5
+    samples: 6
   base_x:
     min: 0.029999999329447746
     max: 1.0
-    samples: 5
+    samples: 8
   base_y:
     min: 0.029999999329447746
     max: 1.0
-    samples: 5
+    samples: 8
   light_frame_count:
     min: 1
     max: 8
   light_frame_radius:
     min: 0.0
     max: 1.0
-    samples: 5
+    samples: 8
   light_frame_thickness_x:
     min: 0.019999999552965164
     max: 0.11999999731779099
@@ -60,35 +60,35 @@ dataset_generation:
   light_frame_roundness:
     min: 0.0
     max: 1.0
-    samples: 5
+    samples: 6
   light_frame_style:
     min: 0.0
     max: 1.0
-    samples: 5
+    samples: 6
   lightbulb_ radius:
     min: 0.019999999552965164
     max: 0.10000000149011612
-    samples: 5
+    samples: 6
   light_frame_mid_point_pos:
     min: 0.0
     max: 1.0
-    samples: 5
+    samples: 6
   light_frame_mid_point_offset_y:
     min: 0.0
     max: 1.0
-    samples: 5
+    samples: 6
   light_frame_mid_point_offset_z:
     min: 0.0
     max: 1.0
-    samples: 5
+    samples: 6
   light_frame_turning_effect:
     min: 0.0
     max: 1.0
-    samples: 5
+    samples: 6
   light_frame_end_point_y:
     min: 0.0
     max: 0.5
-    samples: 5
+    samples: 6
   light_frame_end_point_z:
     min: 0.11999999731779099
     max: 0.5
