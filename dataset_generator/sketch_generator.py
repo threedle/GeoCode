@@ -47,12 +47,12 @@ def main(dataset_dir: Path, phase, parallel, mod):
         clean_scene()
 
         # setup to avoid rendering surfaces and only render the freestyle curves
-        bpy.context.scene.view_layers["View Layer"].use_pass_z = False
-        bpy.context.scene.view_layers["View Layer"].use_pass_combined = False
-        bpy.context.scene.view_layers["View Layer"].use_sky = False
-        bpy.context.scene.view_layers["View Layer"].use_solid = False
-        bpy.context.scene.view_layers["View Layer"].use_volumes = False
-        bpy.context.scene.view_layers["View Layer"].use_strand = True  # freestyle curves
+        bpy.context.view_layer.use_pass_z = False
+        bpy.context.view_layer.use_pass_combined = False
+        bpy.context.view_layer.use_sky = False
+        bpy.context.view_layer.use_solid = False
+        bpy.context.view_layer.use_volumes = False
+        bpy.context.view_layer.use_strand = True  # freestyle curves
 
         recipe_file_path = dataset_dir.joinpath('recipe.yml')
         recipe_yml_obj = get_recipe_yml_obj(recipe_file_path)
