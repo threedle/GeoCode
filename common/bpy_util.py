@@ -3,6 +3,7 @@ import math
 from mathutils import Vector
 from typing import Union
 from pathlib import Path
+import subprocess
 
 
 def save_obj(target_obj_file_path: Union[Path, str], additional_objs_to_save=None, simplification_ratio=None):
@@ -158,3 +159,26 @@ def copy(obj):
     dup_obj.animation_data_clear()
     bpy.context.collection.objects.link(dup_obj)
     return dup_obj
+
+
+def use_gpu_if_available():
+    """
+    allow Blender to use all available GPUs
+    """
+    try:
+        subprocess.check_output('nvidia-smi')
+        print('Nvidia GPU detected!')
+    except Exception:
+        print('No Nvidia GPU available!')
+        return
+    bpy.data.scenes['Scene'].render.engine = "CYCLES"
+    # set the device_type
+    bpy.context.preferences.addons["cycles"].preferences.compute_device_type = "CUDA"
+    # set device to GPU
+    bpy.context.scene.cycles.device = "GPU"
+    # get_devices detects GPU devices
+    bpy.context.preferences.addons["cycles"].preferences.get_devices()
+    print(bpy.context.preferences.addons["cycles"].preferences.compute_device_type)
+    for d in bpy.context.preferences.addons["cycles"].preferences.devices:
+        d["use"] = 1  # using all devices, include GPU and CPU
+        print(d["name"], d["use"])
