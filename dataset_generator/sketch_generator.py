@@ -84,7 +84,7 @@ def main(dataset_dir: Path, phase, parallel, mod):
             file_name = obj_file.name
 
             filepath = obj_gt_dir.joinpath(file_name)
-            bpy.ops.import_scene.obj(filepath=str(filepath), axis_forward='-Z', axis_up='Y', filter_glob="*.obj;*.mtl")
+            bpy.ops.wm.obj_import(filepath=str(filepath), forward_axis='NEGATIVE_Z', up_axis='Y', filter_glob="*.obj;*.mtl")
             obj = bpy.context.selected_objects[0]
 
             # normalize the object
