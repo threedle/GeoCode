@@ -140,7 +140,7 @@ def generate_dataset(domain, dataset_dir: Path, phase, random_shapes_per_value, 
         phase_dir.mkdir(exist_ok=True)
 
         # seed
-        random.seed(mod + len([yml_gt_dir.glob("*.yml")]) + hash_file_name(phase) + sum(map(ord, list("test"))))
+        random.seed(mod + len([yml_gt_dir.glob("*.yml")]) + hash_file_name(phase) + sum(map(ord, list(phase))))
 
         obj = select_shape()
         # get the geometric nodes modifier for the object

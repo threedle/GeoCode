@@ -158,6 +158,7 @@ def main(dataset_dir: Path, phase, parallel, mod):
                 # debug
                 if False:
                     debug_file_path = dataset_dir / "gen_sketch_debug.blend"
+                    print(f"saving scene to [{debug_file_path}]")
                     bpy.ops.wm.save_as_mainfile(filepath=str(debug_file_path))
                     return
                 bpy.ops.render.render(write_still=True)
