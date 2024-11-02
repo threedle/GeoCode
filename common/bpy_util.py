@@ -54,19 +54,14 @@ def normalize_scale(obj):
     bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
     # set origin to the center of the bounding box
     bpy.ops.object.origin_set(type='ORIGIN_GEOMETRY', center='BOUNDS')
-
     obj.location.x = 0
     obj.location.y = 0
     obj.location.z = 0
-
     bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
     max_vert_dist = math.sqrt(max([v.co.dot(v.co) for v in obj.data.vertices]))
-
     for v in obj.data.vertices:
         v.co /= max_vert_dist
-
     bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
-
     # verify that the shape is normalized
     # max_vert_dist = math.sqrt(max([v.co.dot(v.co) for v in obj.data.vertices]))
     # assert abs(max_vert_dist - 1.0) < 0.01

@@ -69,7 +69,7 @@ def train(opt):
     print(f"Experiment name [{opt.exp_name}]")
 
     exp_dir = Path(opt.models_dir, opt.exp_name)
-    exp_dir.mkdir(exist_ok=True)
+    exp_dir.mkdir(exist_ok=True, parents=True)
 
     neptune_short_id = None
     neptune_short_id_file_path = exp_dir.joinpath('neptune_session.json')

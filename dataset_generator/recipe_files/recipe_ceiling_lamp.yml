@@ -94,12 +94,12 @@ dataset_generation:
     max: 0.5
     samples: 5
 camera_angles_train:
-- - -30.0
+- - 30.0
   - 35.0
-- - -30.0
+- - 30.0
   - 55.0
 camera_angles_test:
-- - -30.0
+- - 30.0
   - 15.0
 data_types:
   base_roundness:
