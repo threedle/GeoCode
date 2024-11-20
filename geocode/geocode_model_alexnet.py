@@ -204,8 +204,13 @@ class Model(pl.LightningModule):
                                                                                            targets_sketches)
 
         # log the current LR
-        lr = self.trainer.lr_scheduler_configs[0].scheduler.optimizer.param_groups[0]["lr"]
-        self.log('train/lr', lr)
+        # Fetch the learning rate from the first optimizer
+        lr = None
+        for opt in self.trainer.optimizers:
+            lr = opt.param_groups[0]['lr']  # Access the learning rate of the first param group
+            break  # Stop after the first optimizer
+        if lr is not None:
+            self.log('train/lr', lr, on_step=True, on_epoch=False, prog_bar=True)
 
         # log detailed decoding loss
         for i, param_name in enumerate(self.inputs_to_eval):
