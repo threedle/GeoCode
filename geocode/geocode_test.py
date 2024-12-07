@@ -204,7 +204,7 @@ def test(opt):
         file_names = [str(f.stem)[:-2] for f in random_pc_dir.glob("*.npy")]
 
     # for the comparison to Huang et al. we test in two phases, continuous then discrete, after the continuous test phase the yaml file
-    # will not contain all the parameters, so we should skip predicting it from it
+    # will not contain all the parameters, so we should skip predicting from it
     if opt.huang == 'continuous':
         print("Prediction and Chamfer calculation for Huang experiment is only done for discrete test phase, i.e. when setting the test flag `--huang discrete`")
         return
