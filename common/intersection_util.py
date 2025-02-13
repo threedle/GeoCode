@@ -1,8 +1,50 @@
 import bpy
 import array
+import bmesh
 import mathutils
-from object_print3d_utils import mesh_helpers
 from common.bpy_util import select_objs, select_shape, refresh_obj_in_viewport
+
+
+# refere to https://github.com/blender/blender-addons/blob/main/object_print3d_utils/mesh_helpers.py
+# in Blender 4.2 we cannot use `from object_print3d_utils import mesh_helpers`
+def bmesh_copy_from_object(obj, transform=True, triangulate=True, apply_modifiers=False):
+    """Returns a transformed, triangulated copy of the mesh"""
+
+    assert obj.type == 'MESH'
+
+    if apply_modifiers and obj.modifiers:
+        import bpy
+        depsgraph = bpy.context.evaluated_depsgraph_get()
+        obj_eval = obj.evaluated_get(depsgraph)
+        me = obj_eval.to_mesh()
+        bm = bmesh.new()
+        bm.from_mesh(me)
+        obj_eval.to_mesh_clear()
+    else:
+        me = obj.data
+        if obj.mode == 'EDIT':
+            bm_orig = bmesh.from_edit_mesh(me)
+            bm = bm_orig.copy()
+        else:
+            bm = bmesh.new()
+            bm.from_mesh(me)
+
+    # TODO. remove all customdata layers.
+    # would save ram
+
+    if transform:
+        matrix = obj.matrix_world.copy()
+        if not matrix.is_identity:
+            bm.transform(matrix)
+            # Update normals if the matrix has no rotation.
+            matrix.translation.zero()
+            if not matrix.is_identity:
+                bm.normal_update()
+
+    if triangulate:
+        bmesh.ops.triangulate(bm, faces=bm.faces)
+
+    return bm
 
 
 def isolate_node_as_final_geometry(obj, node_label):
@@ -52,7 +94,7 @@ def detect_self_intersection(obj):
     if not obj.data.polygons:
         return array.array('i', ())
 
-    bm = mesh_helpers.bmesh_copy_from_object(obj, transform=False, triangulate=False)
+    bm = bmesh_copy_from_object(obj, transform=False, triangulate=False)  # mesh_helpers
     tree = mathutils.bvhtree.BVHTree.FromBMesh(bm, epsilon=0.00001)
 
     overlap = tree.overlap(tree)
@@ -97,9 +139,9 @@ def detect_cross_intersection(obj1, obj2):
     if not obj1.data.polygons or not obj2.data.polygons:
         return array.array('i', ())
 
-    bm1 = mesh_helpers.bmesh_copy_from_object(obj1, transform=False, triangulate=False)
+    bm1 = bmesh_copy_from_object(obj1, transform=False, triangulate=False)  # mesh_helpers
     tree1 = mathutils.bvhtree.BVHTree.FromBMesh(bm1, epsilon=0.00001)
-    bm2 = mesh_helpers.bmesh_copy_from_object(obj2, transform=False, triangulate=False)
+    bm2 = bmesh_copy_from_object(obj2, transform=False, triangulate=False)  # mesh_helpers
     tree2 = mathutils.bvhtree.BVHTree.FromBMesh(bm2, epsilon=0.00001)
 
     overlap = tree1.overlap(tree2)

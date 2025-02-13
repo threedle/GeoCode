@@ -3,6 +3,7 @@ import math
 from mathutils import Vector
 from typing import Union
 from pathlib import Path
+import subprocess
 
 
 def save_obj(target_obj_file_path: Union[Path, str], additional_objs_to_save=None, simplification_ratio=None):
@@ -33,7 +34,7 @@ def save_obj(target_obj_file_path: Union[Path, str], additional_objs_to_save=Non
         for additional_obj in additional_objs_to_save:
             additional_obj.select_set(True)
     # save
-    bpy.ops.export_scene.obj(filepath=str(target_obj_file_path), use_selection=True, use_materials=False, use_triangles=True)
+    bpy.ops.wm.obj_export(filepath=str(target_obj_file_path), export_selected_objects=True, export_materials=False, export_triangulated_mesh=True)
     return dup_obj
 
 
@@ -54,19 +55,14 @@ def normalize_scale(obj):
     bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
     # set origin to the center of the bounding box
     bpy.ops.object.origin_set(type='ORIGIN_GEOMETRY', center='BOUNDS')
-
     obj.location.x = 0
     obj.location.y = 0
     obj.location.z = 0
-
     bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
     max_vert_dist = math.sqrt(max([v.co.dot(v.co) for v in obj.data.vertices]))
-
     for v in obj.data.vertices:
         v.co /= max_vert_dist
-
     bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
-
     # verify that the shape is normalized
     # max_vert_dist = math.sqrt(max([v.co.dot(v.co) for v in obj.data.vertices]))
     # assert abs(max_vert_dist - 1.0) < 0.01
@@ -163,3 +159,26 @@ def copy(obj):
     dup_obj.animation_data_clear()
     bpy.context.collection.objects.link(dup_obj)
     return dup_obj
+
+
+def use_gpu_if_available():
+    """
+    allow Blender to use all available GPUs
+    """
+    try:
+        subprocess.check_output('nvidia-smi')
+        print('Nvidia GPU detected!')
+    except Exception:
+        print('No Nvidia GPU available!')
+        return
+    bpy.data.scenes['Scene'].render.engine = "CYCLES"
+    # set the device_type
+    bpy.context.preferences.addons["cycles"].preferences.compute_device_type = "CUDA"
+    # set device to GPU
+    bpy.context.scene.cycles.device = "GPU"
+    # get_devices detects GPU devices
+    bpy.context.preferences.addons["cycles"].preferences.get_devices()
+    print(bpy.context.preferences.addons["cycles"].preferences.compute_device_type)
+    for d in bpy.context.preferences.addons["cycles"].preferences.devices:
+        d["use"] = 1  # using all devices, include GPU and CPU
+        print(d["name"], d["use"])

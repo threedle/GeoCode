@@ -30,7 +30,7 @@ def import_parents(level=1):
 if __name__ == '__main__' and __package__ is None:
     import_parents(level=1)
 
-from common.bpy_util import normalize_scale, look_at, del_obj, clean_scene
+from common.bpy_util import normalize_scale, look_at, del_obj, clean_scene, use_gpu_if_available
 from common.file_util import get_recipe_yml_obj, hash_file_name
 
 
@@ -46,13 +46,46 @@ def main(dataset_dir: Path, phase, parallel, mod):
     try:
         clean_scene()
 
+        use_gpu_if_available()  # also switches to Cycles
+
         # setup to avoid rendering surfaces and only render the freestyle curves
-        bpy.context.scene.view_layers["View Layer"].use_pass_z = False
-        bpy.context.scene.view_layers["View Layer"].use_pass_combined = False
-        bpy.context.scene.view_layers["View Layer"].use_sky = False
-        bpy.context.scene.view_layers["View Layer"].use_solid = False
-        bpy.context.scene.view_layers["View Layer"].use_volumes = False
-        bpy.context.scene.view_layers["View Layer"].use_strand = True  # freestyle curves
+        bpy.context.view_layer.use_pass_z = False
+        bpy.context.view_layer.use_pass_combined = False
+        bpy.context.view_layer.use_sky = False
+        bpy.context.view_layer.use_solid = False
+        bpy.context.view_layer.use_volumes = False
+        bpy.context.view_layer.use_strand = True  # freestyle curves
+        bpy.context.scene.render.use_freestyle = True
+        bpy.context.scene.render.film_transparent = True
+        bpy.context.scene.render.image_settings.color_mode = 'RGB'
+        bpy.context.scene.view_settings.view_transform = 'Standard'
+
+        if "Along Stroke" not in bpy.data.linestyles['LineStyle'].thickness_modifiers:
+            bpy.ops.scene.freestyle_thickness_modifier_add(type='ALONG_STROKE')
+            bpy.data.linestyles["LineStyle"].thickness_modifiers["Along Stroke"].mapping = 'CURVE'
+            bpy.data.linestyles["LineStyle"].thickness_modifiers["Along Stroke"].curve.curves[0].points[0].location = (0.0, 0.44375)
+            bpy.data.linestyles["LineStyle"].thickness_modifiers["Along Stroke"].curve.curves[0].points.new(0.031879, 0.6875)
+            bpy.data.linestyles["LineStyle"].thickness_modifiers["Along Stroke"].curve.curves[0].points.new(0.088926, 0.8625)
+            bpy.data.linestyles["LineStyle"].thickness_modifiers["Along Stroke"].curve.curves[0].points.new(0.104027, 0.918751)
+            bpy.data.linestyles["LineStyle"].thickness_modifiers["Along Stroke"].curve.curves[0].points.new(0.213087, 0.5875)
+            bpy.data.linestyles["LineStyle"].thickness_modifiers["Along Stroke"].curve.curves[0].points.new(0.315436, 0.887501)
+            bpy.data.linestyles["LineStyle"].thickness_modifiers["Along Stroke"].curve.curves[0].points.new(0.404362, 0.64375)
+            bpy.data.linestyles["LineStyle"].thickness_modifiers["Along Stroke"].curve.curves[0].points.new(0.463088, 0.55625)
+            bpy.data.linestyles["LineStyle"].thickness_modifiers["Along Stroke"].curve.curves[0].points.new(0.520134, 0.7125)
+            bpy.data.linestyles["LineStyle"].thickness_modifiers["Along Stroke"].curve.curves[0].points.new(0.545302, 0.975001)
+            bpy.data.linestyles["LineStyle"].thickness_modifiers["Along Stroke"].curve.curves[0].points.new(0.630872, 0.7)
+            bpy.data.linestyles["LineStyle"].thickness_modifiers["Along Stroke"].curve.curves[0].points.new(0.778523, 0.76875)
+            bpy.data.linestyles["LineStyle"].thickness_modifiers["Along Stroke"].curve.curves[0].points.new(0.892618, 0.55)
+            bpy.data.linestyles["LineStyle"].thickness_modifiers["Along Stroke"].curve.curves[0].points[-1].location = (1.0, 0.70625)
+
+        # compositing
+        if not bpy.context.scene.use_nodes:
+            bpy.context.scene.use_nodes = True
+            render_layers_node = bpy.context.scene.node_tree.nodes['Render Layers']
+            composite_node = bpy.context.scene.node_tree.nodes['Composite']
+            alpha_over_node = bpy.context.scene.node_tree.nodes.new('CompositorNodeAlphaOver')
+            bpy.context.scene.node_tree.links.new(render_layers_node.outputs['Image'], alpha_over_node.inputs[2])
+            bpy.context.scene.node_tree.links.new(alpha_over_node.outputs['Image'], composite_node.inputs['Image'])
 
         recipe_file_path = dataset_dir.joinpath('recipe.yml')
         recipe_yml_obj = get_recipe_yml_obj(recipe_file_path)
@@ -84,7 +117,7 @@ def main(dataset_dir: Path, phase, parallel, mod):
             file_name = obj_file.name
 
             filepath = obj_gt_dir.joinpath(file_name)
-            bpy.ops.import_scene.obj(filepath=str(filepath), axis_forward='-Z', axis_up='Y', filter_glob="*.obj;*.mtl")
+            bpy.ops.wm.obj_import(filepath=str(filepath), forward_axis='NEGATIVE_Z', up_axis='Y', filter_glob="*.obj;*.mtl")
             obj = bpy.context.selected_objects[0]
 
             # normalize the object
@@ -122,6 +155,12 @@ def main(dataset_dir: Path, phase, parallel, mod):
                 scene.render.resolution_x = 224
                 scene.render.resolution_y = 224
                 bpy.context.scene.cycles.samples = 10
+                # debug
+                if False:
+                    debug_file_path = dataset_dir / "gen_sketch_debug.blend"
+                    print(f"saving scene to [{debug_file_path}]")
+                    bpy.ops.wm.save_as_mainfile(filepath=str(debug_file_path))
+                    return
                 bpy.ops.render.render(write_still=True)
 
                 # prepare for the next camera
@@ -154,8 +193,8 @@ if __name__ == "__main__":
     args = parser.parse_args(argv)
 
     # hide the main collections (if it is already hidden, there is no effect)
-    bpy.context.scene.view_layers['View Layer'].layer_collection.children['Main'].hide_viewport = True
-    bpy.context.scene.view_layers['View Layer'].layer_collection.children['Main'].exclude = True
+    bpy.context.view_layer.layer_collection.children['Main'].hide_viewport = True
+    bpy.context.view_layer.layer_collection.children['Main'].exclude = True
 
     dataset_dir = Path(args.dataset_dir).expanduser()
     phases = args.phases

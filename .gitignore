@@ -43,3 +43,6 @@ lightning_logs/
 stability_results.json
 dataset_processing/
 docs/
+*.slurm
+*.log
+*.out

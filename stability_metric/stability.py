@@ -41,7 +41,7 @@ class DropSimulator:
 
     def simulate(self):
         print(f"Importing object file [{self.obj_file_path}]")
-        bpy.ops.import_scene.obj(filepath=str(self.obj_file_path), use_split_objects=False)
+        bpy.ops.wm.obj_import(filepath=str(self.obj_file_path), use_split_objects=False)
         obj = bpy.context.selected_objects[0]
         obj.data.materials.clear()
         select_obj(obj)
@@ -96,7 +96,7 @@ class DropSimulator:
         two parts are connected if they are intersecting or there is a path from one part
         to the other that passes only through intersecting parts
         """
-        bpy.ops.import_scene.obj(filepath=str(self.obj_file_path), use_split_objects=False)
+        bpy.ops.wm.obj_import(filepath=str(self.obj_file_path), use_split_objects=False)
         obj = bpy.context.selected_objects[0]
         select_obj(obj)
         bpy.ops.object.mode_set(mode='EDIT')

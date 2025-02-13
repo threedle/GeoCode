@@ -2,6 +2,7 @@
 
 import sys
 import bpy
+import copy
 import time
 import yaml
 import json
@@ -37,11 +38,22 @@ from common.input_param_map import get_input_param_map, randomize_all_params, ym
 from dataset_generator.shape_validators.common_validations import object_sanity_check
 from dataset_generator.shape_validators.shape_validator_factory import ShapeValidatorFactory
 
+import random
+import numpy as np
+random.seed(61)
+np.random.seed(32)
+
 
 def shape_to_yml(gnodes_mod):
     shape_yml_obj = {}
-    for input in gnodes_mod.node_group.inputs:
+    # get an arbitrary "Group Input" node
+    group_input_nodes = [node for node in gnodes_mod.node_group.nodes if node.type == 'GROUP_INPUT']
+    assert len(group_input_nodes) > 0
+    group_input_node = group_input_nodes[0]
+    for input in group_input_node.outputs:
         param_name = str(input.name)
+        if len(param_name) == 0:
+            continue
         param_val = gnodes_mod[input.identifier]
         if input.bl_label == "Vector":
             shape_yml_obj[param_name] = {}
@@ -84,17 +96,29 @@ def json_hash(json_obj):
     return hashlib.md5(json.dumps(json_obj).encode("utf-8")).hexdigest().strip()
 
 
-def update_recipe_yml_obj_with_metadata(recipe_yml_obj, gnodes_mod):
+def update_recipe_yml_obj_with_metadata(recipe_yml_obj, gnodes_mod, write_dataset_generation=False):
     # loops through all the inputs in the geometric node group
     data_types = {}
-    for input in gnodes_mod.node_group.inputs:
+    group_input_nodes = [node for node in gnodes_mod.node_group.nodes if node.type == 'GROUP_INPUT']
+    assert len(group_input_nodes) > 0
+    group_input_node = group_input_nodes[0]
+    for input in group_input_node.outputs:
         param_name = str(input.name)
+        if len(param_name) == 0:
+            continue
         data_types[param_name] = {}
         data_types[param_name]['type'] = input.bl_label
         if input.bl_label != 'Boolean':
-            data_types[param_name]['min'] = input.min_value
-            data_types[param_name]['max'] = input.max_value
+            data_types[param_name]['min'] = gnodes_mod.node_group.interface.items_tree[param_name].min_value
+            data_types[param_name]['max'] = gnodes_mod.node_group.interface.items_tree[param_name].max_value
     recipe_yml_obj['data_types'] = data_types
+    if write_dataset_generation:
+        dataset_generation = copy.deepcopy(data_types)
+        for param_name in dataset_generation:
+            if dataset_generation[param_name]['type'] not in ['Boolean', 'Integer']:
+                dataset_generation[param_name]['samples'] = 5
+            del dataset_generation[param_name]['type']
+        recipe_yml_obj['dataset_generation'] = dataset_generation
 
 
 def generate_dataset(domain, dataset_dir: Path, phase, random_shapes_per_value, parallel=1, mod=None):
@@ -105,15 +129,18 @@ def generate_dataset(domain, dataset_dir: Path, phase, random_shapes_per_value, 
     """
     try:
         # all other processes must wait for the folder to be created before continuing
-        phase_dir = dataset_dir.joinpath(phase)
-        yml_gt_dir = phase_dir.joinpath('yml_gt')
-        obj_gt_dir = phase_dir.joinpath('obj_gt')
+        phase_dir = dataset_dir / phase
+        yml_gt_dir = phase_dir / 'yml_gt'
+        obj_gt_dir = phase_dir / 'obj_gt'
         if parallel > 1 and mod != 0:
             while not (dataset_dir.is_dir() and phase_dir.is_dir() and yml_gt_dir.is_dir() and obj_gt_dir.is_dir()):
                 time.sleep(2)
 
         dataset_dir.mkdir(exist_ok=True)
         phase_dir.mkdir(exist_ok=True)
+
+        # seed
+        random.seed(mod + len([yml_gt_dir.glob("*.yml")]) + hash_file_name(phase) + sum(map(ord, list(phase))))
 
         obj = select_shape()
         # get the geometric nodes modifier for the object
@@ -129,7 +156,7 @@ def generate_dataset(domain, dataset_dir: Path, phase, random_shapes_per_value, 
 
         if parallel <= 1:
             # save the recipe object as yml file in the dataset main dir (since it now also contains additional required metadata)
-            target_recipe_file_path = dataset_dir.joinpath('recipe.yml')
+            target_recipe_file_path = dataset_dir / 'recipe.yml'
             save_yml(recipe_yml_obj, target_recipe_file_path)
 
         yml_gt_dir.mkdir(exist_ok=True)
@@ -144,6 +171,7 @@ def generate_dataset(domain, dataset_dir: Path, phase, random_shapes_per_value, 
         shape_validator = ShapeValidatorFactory.create_validator(domain)
 
         num_disqualified = 0
+        num_intersections = 0
         
         existing_samples = {}
         for curr_param_name, curr_input_param in input_params_map.items():
@@ -157,8 +185,8 @@ def generate_dataset(domain, dataset_dir: Path, phase, random_shapes_per_value, 
 
                     curr_param_value_str_for_file = f"{curr_param_value:.4f}".replace('.', '_')
                     file_name = f"{domain}_{curr_input_param.get_name_for_file()}_{curr_param_value_str_for_file}_{shape_idx:04d}"
-                    obj_file = obj_gt_dir.joinpath(f"{file_name}.obj")
-                    yml_file = yml_gt_dir.joinpath(f"{file_name}.yml")
+                    obj_file = obj_gt_dir / f"{file_name}.obj"
+                    yml_file = yml_gt_dir / f"{file_name}.yml"
                     if obj_file.is_file() and yml_file.is_file() and object_sanity_check(obj_file):
                         with open(yml_file, 'r') as file:
                             param_values_map_from_yml = yaml.load(file, Loader=yaml.FullLoader)
@@ -187,12 +215,12 @@ def generate_dataset(domain, dataset_dir: Path, phase, random_shapes_per_value, 
 
                     if not param_descriptors.check_constraints(param_values_map):
                         num_disqualified += 1
-                        with open(f'./retry_{mod}.log', 'a') as f:
+                        with open(f'{dataset_dir}/retry_{mod}.log', 'a') as f:
                             f.write(f'constraints {file_name}\n')
                         continue
 
                     if not param_descriptors_map[curr_param_name].is_visible(param_values_map):
-                        with open(f'./retry_{mod}.log', 'a') as f:
+                        with open(f'{dataset_dir}/retry_{mod}.log', 'a') as f:
                             f.write(f'visibility conditions {file_name} [{param_descriptors_map[curr_param_name].visibility_condition}] \n')
                         continue
 
@@ -208,7 +236,9 @@ def generate_dataset(domain, dataset_dir: Path, phase, random_shapes_per_value, 
                     is_valid, msg = shape_validator.validate_shape(input_params_map)
                     if not is_valid:
                         num_disqualified += 1
-                        with open(f'./retry_{mod}.log', 'a') as f:
+                        if 'intersect' in msg.lower():
+                            num_intersections += 1
+                        with open(f'{dataset_dir}/retry_{mod}.log', 'a') as f:
                             f.write(f'Shape invalid with message [{msg}] for file {file_name}\n')
                         continue
 
@@ -222,14 +252,14 @@ def generate_dataset(domain, dataset_dir: Path, phase, random_shapes_per_value, 
                     sample_hash = json_hash(shape_yml)
                     if sample_hash in existing_samples:
                         dup_hashes_attempts.append(sample_hash)
-                        with open(f'./retry_{mod}.log', 'a') as f:
+                        with open(f'{dataset_dir}/retry_{mod}.log', 'a') as f:
                             f.write(f'already exists {sample_hash} {file_name}\n')
                         continue
                     existing_samples[sample_hash] = file_name
 
-                    target_yml_file_path = yml_gt_dir.joinpath(f"{file_name}.yml")
+                    target_yml_file_path = yml_gt_dir / f"{file_name}.yml"
                     save_obj_label(gnodes_mod, target_yml_file_path)
-                    target_obj_file_path = obj_gt_dir.joinpath(f"{file_name}.obj")
+                    target_obj_file_path = obj_gt_dir / f"{file_name}.obj"
                     dup_obj = save_obj(target_obj_file_path)
                     # delete the duplicate object
                     select_objs(dup_obj)
@@ -241,17 +271,18 @@ def generate_dataset(domain, dataset_dir: Path, phase, random_shapes_per_value, 
 
         # log duplicate attempts
         if dup_hashes_attempts:
-            dup_hashes_attempts_file_path = dataset_dir.joinpath(f"dup_hashes_attempts_{mod}.txt")
+            dup_hashes_attempts_file_path = dataset_dir / f"dup_hashes_attempts_{mod}.txt"
             with open(dup_hashes_attempts_file_path, 'a') as dup_hashes_attempts_file:
                 dup_hashes_attempts_file.writelines([f"{h}\n" for h in dup_hashes_attempts])
                 dup_hashes_attempts_file.write('---\n')
 
         existing_samples['metadata'] = {}
         existing_samples['metadata']['num_disqualified'] = num_disqualified
+        existing_samples['metadata']['num_intersections'] = num_intersections
         return existing_samples
 
     except Exception as e:
-        with open(f'./err_{mod}.log', 'a') as f:
+        with open(f'{dataset_dir}/err_{mod}.log', 'a') as f:
             f.write(repr(e))
             f.write('\n')
             f.write(traceback.format_exc())
@@ -262,14 +293,14 @@ def main_generate_dataset_single_proc(args, blender_exe, blend_file):
     assert blender_exe
     assert blend_file
     # show the main collections (if it is already shown, there is no effect)
-    bpy.context.scene.view_layers['View Layer'].layer_collection.children['Main'].hide_viewport = False
-    bpy.context.scene.view_layers['View Layer'].layer_collection.children['Main'].exclude = False
+    bpy.context.view_layer.layer_collection.children['Main'].hide_viewport = False
+    bpy.context.view_layer.layer_collection.children['Main'].exclude = False
 
     try:
         dataset_dir = Path(args.dataset_dir).expanduser()
         existing_samples = generate_dataset(args.domain, dataset_dir, args.phase,
                                             args.num_variations, parallel=args.parallel, mod=args.mod)
-        samples_hashes_file_path = dataset_dir.joinpath(f"sample_hashes_{args.mod}.json")
+        samples_hashes_file_path = dataset_dir / f"sample_hashes_{args.mod}.json"
         with open(samples_hashes_file_path, 'w') as samples_hashes_file:
             json.dump(existing_samples, samples_hashes_file)
         print(f"Process [{args.mod}] done")
@@ -282,8 +313,10 @@ def main_generate_dataset_parallel(args, blender_exe, blend_file):
     dataset_dir = Path(args.dataset_dir).expanduser()
     dataset_dir.mkdir(exist_ok=True)
 
-    phase_dir = dataset_dir.joinpath(args.phase)
+    phase_dir = dataset_dir / args.phase
     phase_dir.mkdir(exist_ok=True)
+    yml_gt_dir = phase_dir / 'yml_gt'
+    obj_gt_dir = phase_dir / 'obj_gt'
 
     try:
         for existing_shapes_json_file_path in dataset_dir.glob("sample_hashes_*.json"):
@@ -298,18 +331,23 @@ def main_generate_dataset_parallel(args, blender_exe, blend_file):
         update_base_shape_in_yml(gnodes_mod, recipe_file_path)
         update_recipe_yml_obj_with_metadata(recipe_yml_obj, gnodes_mod)
         # save the recipe.yml file in the dataset's main dir (it now also contains required metadata)
-        target_recipe_file_path = dataset_dir.joinpath('recipe.yml')
+        target_recipe_file_path = dataset_dir / 'recipe.yml'
         save_yml(recipe_yml_obj, target_recipe_file_path)
         input_params_map = get_input_param_map(gnodes_mod, recipe_yml_obj)
         # loops through all the inputs in the geometric node group
         data_types = {}
-        for input in gnodes_mod.node_group.inputs:
+        group_input_nodes = [node for node in gnodes_mod.node_group.nodes if node.type == 'GROUP_INPUT']
+        assert len(group_input_nodes) > 0
+        group_input_node = group_input_nodes[0]
+        for input in group_input_node.outputs:
             param_name = str(input.name)
+            if len(param_name) == 0:
+                continue
             data_types[param_name] = {}
             data_types[param_name]['type'] = input.bl_label
             if input.bl_label != 'Boolean':
-                data_types[param_name]['min'] = input.min_value
-                data_types[param_name]['max'] = input.max_value
+                data_types[param_name]['min'] = gnodes_mod.node_group.interface.items_tree[param_name].min_value
+                data_types[param_name]['max'] = gnodes_mod.node_group.interface.items_tree[param_name].max_value
         recipe_yml_obj['data_types'] = data_types
         inputs_to_eval = list(input_params_map.keys())
         param_descriptors = ParamDescriptors(recipe_yml_obj, inputs_to_eval)
@@ -328,13 +366,15 @@ def main_generate_dataset_parallel(args, blender_exe, blend_file):
 
             existing_samples = {}
             num_disqualified = 0
+            num_intersections = 0
             # add all the samples hashes from any other phase to avoid duplicates with other phases
-            sample_hashes_json_file_path = dataset_dir.joinpath("sample_hashes.json")
+            sample_hashes_json_file_path = dataset_dir / "sample_hashes.json"
             if sample_hashes_json_file_path.is_file():
                 with open(sample_hashes_json_file_path, 'r') as existing_samples_file:
                     existing_samples = json.load(existing_samples_file)
                     if args.phase in existing_samples:
                         num_disqualified = existing_samples[args.phase]['metadata']['num_disqualified']
+                        num_intersections = existing_samples[args.phase]['metadata']['num_intersections']
             # clear any current phase sample hashes as they are added by the processes
             existing_samples[args.phase] = {}
 
@@ -343,6 +383,7 @@ def main_generate_dataset_parallel(args, blender_exe, blend_file):
                 with open(single_process_existing_samples_json_file_path, 'r') as single_process_existing_samples_json_file:
                     single_process_existing_samples = json.load(single_process_existing_samples_json_file)
                     num_disqualified += single_process_existing_samples['metadata']['num_disqualified']
+                    num_intersections += single_process_existing_samples['metadata']['num_intersections']
                     print(single_process_existing_samples_json_file_path)
                     print(single_process_existing_samples)
                     for hash, file_name in single_process_existing_samples.items():
@@ -359,14 +400,15 @@ def main_generate_dataset_parallel(args, blender_exe, blend_file):
 
             existing_samples[args.phase]['metadata'] = {}
             existing_samples[args.phase]['metadata']['num_disqualified'] = num_disqualified
+            existing_samples[args.phase]['metadata']['num_intersections'] = num_intersections
 
             # delete the duplicated files so they will be regenerated
             if duplicates:
                 print(f"Found [{len(duplicates)}] duplicates that will be regenerated")
                 print("\n\t".join(duplicates))
             for file_name in duplicates:
-                obj_file = phase_dir.joinpath(file_name + ".obj")
-                yml_file = phase_dir.joinpath(file_name + ".yml")
+                obj_file = obj_gt_dir / f"{file_name}.obj"
+                yml_file = yml_gt_dir / f"{file_name}.yml"
                 obj_file.unlink()
                 yml_file.unlink()
 

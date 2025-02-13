@@ -69,7 +69,7 @@ def train(opt):
     print(f"Experiment name [{opt.exp_name}]")
 
     exp_dir = Path(opt.models_dir, opt.exp_name)
-    exp_dir.mkdir(exist_ok=True)
+    exp_dir.mkdir(exist_ok=True, parents=True)
 
     neptune_short_id = None
     neptune_short_id_file_path = exp_dir.joinpath('neptune_session.json')
@@ -159,8 +159,14 @@ def train(opt):
                                               continuous=huang_continuous)
     else:
         last_checkpoint_file_path = None
-        pl_model = Model(top_k_acc, opt.batch_size, detailed_vec_size, opt.increase_network_size, opt.normalize_embeddings, opt.pretrained_vgg,
-                         opt.input_type, inputs_to_eval, params['lr'], params['sched_step_size'], params['sched_gamma'], opt.exp_name,
-                         trainer=trainer, param_descriptors=param_descriptors, models_dir=opt.models_dir, use_regression=opt.use_regression,
-                         discrete=huang_discrete, continuous=huang_continuous)
+        if opt.huang:
+            pl_model = Model(top_k_acc, opt.batch_size, detailed_vec_size, opt.increase_network_size, opt.normalize_embeddings, opt.pretrained_vgg,
+                            opt.input_type, inputs_to_eval, params['lr'], params['sched_step_size'], params['sched_gamma'], opt.exp_name,
+                            trainer=trainer, param_descriptors=param_descriptors, models_dir=opt.models_dir, use_regression=opt.use_regression,
+                            discrete=huang_discrete, continuous=huang_continuous)
+        else:
+            # no huang related arguments
+            pl_model = Model(top_k_acc, opt.batch_size, detailed_vec_size, opt.increase_network_size, opt.normalize_embeddings, opt.pretrained_vgg,
+                            opt.input_type, inputs_to_eval, params['lr'], params['sched_step_size'], params['sched_gamma'], opt.exp_name,
+                            trainer=trainer, param_descriptors=param_descriptors, models_dir=opt.models_dir, use_regression=opt.use_regression)
     trainer.fit(pl_model, train_dataloaders=combined_train_dataloader, val_dataloaders=combined_val_dataloader, ckpt_path=last_checkpoint_file_path)

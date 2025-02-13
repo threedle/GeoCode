@@ -43,8 +43,8 @@ conda activate geocode
 python setup.py install
 
 # Install Blender 3.2 under `~/Blender`
-(sudo) chmod +x ./scripts/install_blender3.2.sh
-./scripts/install_blender3.2.sh
+(sudo) chmod +x ./scripts/install_blender4.2.sh
+./scripts/install_blender4.2.sh
 
 # Download the dataset (`~/datasets`), checkpoint (`~/models`) and blend file (`~/blends`) of the `chair` domain
 python scripts/download_ds.py --domain chair --datasets-dir ~/datasets --models-dir ~/models --blends-dir ~/blends
@@ -58,7 +58,7 @@ Run the test for the `chair` domain using the downloaded checkpoint, make sure t
 ```bash
 cd GeoCode
 conda activate geocode
-python geocode/geocode.py test --blender-exe ~/Blender/blender-3.2.0-linux-x64/blender --blend-file ~/blends/procedural_chair.blend --models-dir ~/models --dataset-dir ~/datasets/ChairDataset --input-type pc sketch --phase test --exp-name exp_geocode_chair
+python geocode/geocode.py test --blender-exe ~/Blender/blender-4.2.3-linux-x64/blender --blend-file ~/blends/procedural_chair.blend --models-dir ~/models --dataset-dir ~/datasets/ChairDataset --input-type pc sketch --phase test --exp-name exp_geocode_chair
 ```
 
 This will generate the results in the following directory structure, in 
@@ -85,7 +85,7 @@ We also provide a way to automatically render the resulting 3D objects. Please n
 ```bash
 cd GeoCode
 conda activate geocode
-~/Blender/blender-3.2.0-linux-x64/blender ~/blends/procedural_chair.blend -b --python visualize_results/visualize.py -- --dataset-dir ~/datasets/ChairDataset --phase test --exp-name exp_geocode_chair
+~/Blender/blender-4.2.3-linux-x64/blender ~/blends/procedural_chair.blend -b --python visualize_results/visualize.py -- --dataset-dir ~/datasets/ChairDataset --phase test --exp-name exp_geocode_chair
 ```
 
 this will generate the following additional directories under `results_exp_geocode_chair`:
@@ -96,7 +96,7 @@ this will generate the following additional directories under `results_exp_geoco
             └───render_predictions_sketch  <-- renders of the objects predicted from sketch input
 ```
 
-## Run training on our dataset (1 GPU and 5 CPUs setup is recommended)
+## Run training on our dataset (1 GPU and 5 CPUs setup with 5GB of memory per CPU is recommended)
 
 Training from a checkpoint or new training is done similarly, and only depends on the existence of a `latest.ckpt` checkpoint file in the experiment directory (under `~/models` in this example).
 Please note that training using our checkpoints will show a starting epoch of 0.
@@ -187,7 +187,7 @@ To do so, simply add the flags `--parallel 10 --mod $NODE_ID` to the visualizati
 ```bash
 cd GeoCode
 conda activate geocode
-~/Blender/blender-3.2.0-linux-x64/blender ~/blends/procedural_chair.blend -b --python visualize_results/visualize.py -- --dataset-dir ~/datasets/ChairDataset --phase test --exp-name exp_geocode_chair --parallel 10 --mod $NODE_ID
+~/Blender/blender-4.2.3-linux-x64/blender ~/blends/procedural_chair.blend -b --python visualize_results/visualize.py -- --dataset-dir ~/datasets/ChairDataset --phase test --exp-name exp_geocode_chair --parallel 10 --mod $NODE_ID
 ```
 
 where `$NODE_ID` is the node id.
@@ -198,41 +198,41 @@ where `$NODE_ID` is the node id.
 You can optionally edit the `dataset_generation` or the `camera_angles` sections in the appropriate `recipe` YAML file. For example, for the chair domain, edit the following recipe file:
 `GeoCode/dataset_generator/recipe_files/chair_recipe.yml`. We encourage the user to inspect the relevant Blend file before modifying the recipe file.
 
-### Step 2 - generate the raw objects (20 CPUs with 8GB memory per CPU is recommended)
+### Step 2 - generate the raw objects (20 CPUs with 8GB of memory per CPU is recommended)
 In this step no GPU and no conda env are required.
 
 For example, generating the val, test, and train datasets for the chair domain, with 3, 3, and 30 shape variation per parameter value, is done using the following commands: 
 
 ```bash
 cd GeoCode
-~/Blender/blender-3.2.0-linux-x64/blender ~/blends/procedural_chair.blend -b --python dataset_generator/dataset_generator.py -- generate-dataset --dataset-dir ~/datasets/MyChairDataset --domain chair --phase val --num-variations 3 --parallel 20
-~/Blender/blender-3.2.0-linux-x64/blender ~/blends/procedural_chair.blend -b --python dataset_generator/dataset_generator.py -- generate-dataset --dataset-dir ~/datasets/MyChairDataset --domain chair --phase test --num-variations 3 --parallel 20
-~/Blender/blender-3.2.0-linux-x64/blender ~/blends/procedural_chair.blend -b --python dataset_generator/dataset_generator.py -- generate-dataset --dataset-dir ~/datasets/MyChairDataset --domain chair --phase train --num-variations 30 --parallel 20
+~/Blender/blender-4.2.3-linux-x64/blender ~/blends/procedural_chair.blend -b --python dataset_generator/dataset_generator.py -- generate-dataset --dataset-dir ~/datasets/MyChairDataset --domain chair --phase val --num-variations 3 --parallel 20
+~/Blender/blender-4.2.3-linux-x64/blender ~/blends/procedural_chair.blend -b --python dataset_generator/dataset_generator.py -- generate-dataset --dataset-dir ~/datasets/MyChairDataset --domain chair --phase test --num-variations 3 --parallel 20
+~/Blender/blender-4.2.3-linux-x64/blender ~/blends/procedural_chair.blend -b --python dataset_generator/dataset_generator.py -- generate-dataset --dataset-dir ~/datasets/MyChairDataset --domain chair --phase train --num-variations 30 --parallel 20
 ```
 
 For vase domain
 ```bash
-~/Blender/blender-3.2.0-linux-x64/blender ~/blends/procedural_vase.blend -b --python dataset_generator/dataset_generator.py -- generate-dataset --dataset-dir ~/datasets/MyVaseDataset --domain vase --phase val --num-variations 3 --parallel 20
-~/Blender/blender-3.2.0-linux-x64/blender ~/blends/procedural_vase.blend -b --python dataset_generator/dataset_generator.py -- generate-dataset --dataset-dir ~/datasets/MyVaseDataset --domain vase --phase test --num-variations 3 --parallel 20
-~/Blender/blender-3.2.0-linux-x64/blender ~/blends/procedural_vase.blend -b --python dataset_generator/dataset_generator.py -- generate-dataset --dataset-dir ~/datasets/MyVaseDataset --domain vase --phase train --num-variations 30 --parallel 20
+~/Blender/blender-4.2.3-linux-x64/blender ~/blends/procedural_vase.blend -b --python dataset_generator/dataset_generator.py -- generate-dataset --dataset-dir ~/datasets/MyVaseDataset --domain vase --phase val --num-variations 3 --parallel 20
+~/Blender/blender-4.2.3-linux-x64/blender ~/blends/procedural_vase.blend -b --python dataset_generator/dataset_generator.py -- generate-dataset --dataset-dir ~/datasets/MyVaseDataset --domain vase --phase test --num-variations 3 --parallel 20
+~/Blender/blender-4.2.3-linux-x64/blender ~/blends/procedural_vase.blend -b --python dataset_generator/dataset_generator.py -- generate-dataset --dataset-dir ~/datasets/MyVaseDataset --domain vase --phase train --num-variations 30 --parallel 20
 ```
 
 For table dataset
 ```bash
-~/Blender/blender-3.2.0-linux-x64/blender ~/blends/procedural_table.blend -b --python dataset_generator/dataset_generator.py -- generate-dataset --dataset-dir ~/datasets/MyTableDataset --domain table --phase val --num-variations 3 --parallel 20
-~/Blender/blender-3.2.0-linux-x64/blender ~/blends/procedural_table.blend -b --python dataset_generator/dataset_generator.py -- generate-dataset --dataset-dir ~/datasets/MyTableDataset --domain table --phase test --num-variations 3 --parallel 20
-~/Blender/blender-3.2.0-linux-x64/blender ~/blends/procedural_table.blend -b --python dataset_generator/dataset_generator.py -- generate-dataset --dataset-dir ~/datasets/MyTableDataset --domain table --phase train --num-variations 30 --parallel 20
+~/Blender/blender-4.2.3-linux-x64/blender ~/blends/procedural_table.blend -b --python dataset_generator/dataset_generator.py -- generate-dataset --dataset-dir ~/datasets/MyTableDataset --domain table --phase val --num-variations 3 --parallel 20
+~/Blender/blender-4.2.3-linux-x64/blender ~/blends/procedural_table.blend -b --python dataset_generator/dataset_generator.py -- generate-dataset --dataset-dir ~/datasets/MyTableDataset --domain table --phase test --num-variations 3 --parallel 20
+~/Blender/blender-4.2.3-linux-x64/blender ~/blends/procedural_table.blend -b --python dataset_generator/dataset_generator.py -- generate-dataset --dataset-dir ~/datasets/MyTableDataset --domain table --phase train --num-variations 30 --parallel 20
 ```
 
 Please note that the shapes generated in this step are already normalized.
 
-### Step 3 - generate the sketches (usage of multiple nodes with GPU is recommended)
+### Step 3 - generate the sketches (usage of multiple nodes with GPU and 16GB of memory per CPU is recommended)
 
-This step does not require a conda env but requires GPU(s)
+This step does not require a conda env but requires GPU(s).
 
 ```bash
 cd GeoCode
-~/Blender/blender-3.2.0-linux-x64/blender ~/blends/procedural_vase.blend -b --python dataset_generators/sketch_generator.py -- --dataset-dir ~/datasets/MyChairDataset --phases val test train
+~/Blender/blender-4.2.3-linux-x64/blender ~/blends/procedural_vase.blend -b --python dataset_generators/sketch_generator.py -- --dataset-dir ~/datasets/MyChairDataset --phases val test train
 ```
 
 You can also run this in parallel, for example, with 10 processes, by adding the flags `--parallel 10 --mod $NODE_ID`
@@ -245,7 +245,7 @@ To evaluate a tested dataset phase using our _stability metric_ use the followin
 
 ```bash
 cd GeoCode/stability_metric
-python stability_parallel.py --blender-exe ~/Blender/blender-3.2.0-linux-x64/blender --dir-path ~/datasets/ChairDataset/val/obj_gt
+python stability_parallel.py --blender-exe ~/Blender/blender-4.2.3-linux-x64/blender --dir-path ~/datasets/ChairDataset/val/obj_gt
 ```
 
 ## Additional scripts
@@ -261,7 +261,7 @@ Please refer to the README.md file that is downloaded along with the scripts aft
 ```bash
 cd GeoCode
 scripts/download_ds_processing_scripts.py
-~/Blender/blender-3.2.0-linux-x64/blender -b --python dataset_processing/prepare_coseg.py -- --help
+~/Blender/blender-4.2.3-linux-x64/blender -b --python dataset_processing/prepare_coseg.py -- --help
 ```
 
 ## Code structure

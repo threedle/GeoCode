@@ -204,8 +204,13 @@ class Model(pl.LightningModule):
                                                                                            targets_sketches)
 
         # log the current LR
-        lr = self.trainer.lr_scheduler_configs[0].scheduler.optimizer.param_groups[0]["lr"]
-        self.log('train/lr', lr)
+        # Fetch the learning rate from the first optimizer
+        lr = None
+        for opt in self.trainer.optimizers:
+            lr = opt.param_groups[0]['lr']  # Access the learning rate of the first param group
+            break  # Stop after the first optimizer
+        if lr is not None:
+            self.log('train/lr', lr, on_step=True, on_epoch=False, prog_bar=True)
 
         # log detailed decoding loss
         for i, param_name in enumerate(self.inputs_to_eval):
@@ -341,15 +346,23 @@ class Model(pl.LightningModule):
                 if self.logger:
                     self.logger.run["barplot"].log(File.as_image(fig))
 
+    def _get_huang_continuous_path(self, yaml_file_path, folder_name):
+        continuous_yaml_file_path = yaml_file_path.parents[2] / f"results_{self.exp_name.replace('_discrete_', '_cont_')}" / folder_name / yaml_file_path.name
+        if not continuous_yaml_file_path.is_file():
+            continuous_yaml_file_path = yaml_file_path.parents[2] / f"results_{self.exp_name.replace('_discrete_', '_continuous_')}" / folder_name / yaml_file_path.name
+        if not continuous_yaml_file_path.is_file():
+            raise Exception(f"Failed when searching the continuous Huang experiment folder [{continuous_yaml_file_path}].")
+        return continuous_yaml_file_path
+
     def test_step(self, test_batch, batch_idx, dataloader_idx=0):
         assert self.batch_size == 1
-
         pc, sketch = None, None
         if self.test_dataloaders_types[dataloader_idx] == 'pc':
             file_name, pc, targets, shape = test_batch
         elif self.test_dataloaders_types[dataloader_idx] == 'sketch':
             file_name, sketch_camera_angle, sketch, targets, shape = test_batch
-            if self.discrete or self.continuous:
+            if shape and (self.discrete or self.continuous):
+                # the existence of "shape" means we have ground truth target values
                 targets = targets.float()
                 targets = targets[:, self.params_indices]
         else:
@@ -373,7 +386,8 @@ class Model(pl.LightningModule):
             elif self.discrete:
                 pred_sketch = self.decoders_net.decode(self.vgg(sketch))
                 pred_map_sketch = self.param_descriptors.convert_prediction_vector_to_map_discrete_only(self.inputs_to_eval, pred_sketch.cpu())
-                with open(sketch_pred_yaml_file_path.parents[2] / f"results_{self.exp_name.replace('_discrete_', '_cont_')}" / "yml_predictions_sketch" / sketch_pred_yaml_file_path.name, 'r') as continuous_yaml_file:
+                continuous_yaml_file_path = self._get_huang_continuous_path(sketch_pred_yaml_file_path, "yml_predictions_sketch")
+                with open(continuous_yaml_file_path, 'r') as continuous_yaml_file:
                     pred_map_sketch_continuous = yaml.load(continuous_yaml_file, Loader=yaml.FullLoader)
                 pred_map_sketch.update(pred_map_sketch_continuous)
             else:
@@ -401,7 +415,8 @@ class Model(pl.LightningModule):
                     correct_arr_sketch = self.acc_calc.eval_discrete_only(pred_sketch, targets, self.top_k_acc)
                     expanded_targets_vector = self.param_descriptors.expand_target_vector_discrete_only(self.inputs_to_eval, targets.cpu())
                     gt_map = self.param_descriptors.convert_prediction_vector_to_map_discrete_only(self.inputs_to_eval, expanded_targets_vector)
-                    with open(gt_yaml_file_path.parents[2] / f"results_{self.exp_name.replace('_discrete_', '_cont_')}" / "yml_gt" / gt_yaml_file_path.name, 'r') as continuous_yaml_file:
+                    continuous_yaml_file_path = self._get_huang_continuous_path(gt_yaml_file_path, "yml_gt")
+                    with open(continuous_yaml_file_path, 'r') as continuous_yaml_file:
                         gt_map_continuous = yaml.load(continuous_yaml_file, Loader=yaml.FullLoader)
                     gt_map.update(gt_map_continuous)
                 elif self.continuous:
@@ -460,4 +475,3 @@ class Model(pl.LightningModule):
                 barplot_data_file_path = f'{self.models_dir}/{self.exp_name}/test_barplot_top_{top_k + 1}.json'
                 with open(barplot_data_file_path, 'w') as barplot_data_file:
                     json.dump(barplot_data, barplot_data_file)
-

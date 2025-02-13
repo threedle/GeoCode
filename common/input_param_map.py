@@ -47,12 +47,14 @@ class InputParam:
         return res.replace(" ", "_")
 
 
-def get_input_values(input, yml_gen_rule):
+def get_input_values(gnodes_mod, input, yml_gen_rule):
     min_value = None
     max_value = None
+    param_name = input.name
     if input.bl_label != 'Boolean':
-        min_value = input.min_value
-        max_value = input.max_value
+        # TODO(ofekp): find something simpler that works for Blender4.2,  input.min_value no longer works
+        min_value = gnodes_mod.node_group.interface.items_tree[param_name].min_value
+        max_value = gnodes_mod.node_group.interface.items_tree[param_name].max_value
     # override min and max with requested values from recipe yml file
     if 'min' in yml_gen_rule:
         requested_min_value = yml_gen_rule['min']
@@ -90,12 +92,17 @@ def calculate_step(min_value, max_value, samples):
 def get_input_param_map(gnodes_mod, yml):
     input_params_map = {}
     # loops through all the inputs in the geometric node group
+    group_input_nodes = [node for node in gnodes_mod.node_group.nodes if node.type == 'GROUP_INPUT']
+    assert len(group_input_nodes) > 0
+    group_input_node = group_input_nodes[0]
+    param_names = [input.name for input in group_input_node.outputs if len(input.name) > 0]
     for param_name in yml['dataset_generation']:
-        if param_name not in gnodes_mod.node_group.inputs:
+        if param_name not in param_names:
             raise Exception(f"Parameter named [{param_name}] was not found in geometry nodes input group.")
-    for input in gnodes_mod.node_group.inputs:
+    for input in group_input_node.outputs:
         param_name = str(input.name)
-
+        if len(param_name) == 0:
+            continue
         # we only change inputs that are explicitly noted in the yaml object
         if param_name in yml['dataset_generation']:
             param_gen_rule = yml['dataset_generation'][param_name]
@@ -104,10 +111,10 @@ def get_input_param_map(gnodes_mod, yml):
                 for idx, axis in enumerate(['x', 'y', 'z']):
                     if not axis in param_gen_rule:
                         continue
-                    curr_param_values = get_input_values(input, param_gen_rule[axis])
+                    curr_param_values = get_input_values(gnodes_mod, input, param_gen_rule[axis])
                     input_params_map[f"{param_name} {axis}"] = InputParam(gnodes_mod, input, axis, curr_param_values)
             else:
-                curr_param_values = get_input_values(input, param_gen_rule)
+                curr_param_values = get_input_values(gnodes_mod, input, param_gen_rule)
                 input_params_map[param_name] = InputParam(gnodes_mod, input, None, curr_param_values)
     return input_params_map
 
@@ -120,8 +127,13 @@ def yml_to_shape(shape_yml_obj, input_params_map, ignore_sanity_check=False):
         gnodes_mod = get_geometric_nodes_modifier(obj)
 
         # loops through all the inputs in the geometric node group
-        for input in gnodes_mod.node_group.inputs:
+        group_input_nodes = [node for node in gnodes_mod.node_group.nodes if node.type == 'GROUP_INPUT']
+        assert len(group_input_nodes) > 0
+        group_input_node = group_input_nodes[0]
+        for input in group_input_node.outputs:
             param_name = str(input.name)
+            if len(param_name) == 0:
+                continue
             if param_name not in shape_yml_obj:
                 continue
             param_val = shape_yml_obj[param_name]

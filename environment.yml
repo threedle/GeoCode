@@ -22,7 +22,6 @@ dependencies:
   - iopath=0.1.9
   - fvcore=0.1.5.post20210915
   - tqdm>=4.64.0
-  - gdown>=4.5.4
   - pytorch3d
   - pip
   - pip:

@@ -29,7 +29,7 @@ def main():
     common_parser.add_argument('--normalize-embeddings', action='store_true', default=False, help='Normalize embeddings before using the decoders')
     common_parser.add_argument('--pretrained-vgg', action='store_true', default=False, help='Use a pretrained VGG network')
     common_parser.add_argument('--use-regression', action='store_true', default=False, help='Use regression instead of classification for continuous parameters')
-    common_parser.add_argument('--huang', choices=['continuous', 'discrete'], default=False, help='Comparison to Huang et al. which separates contiuous and discrete parameters.')
+    common_parser.add_argument('--huang', choices=['continuous', 'discrete'], default=False, help='Comparison to Huang et al. which separates continuous and discrete parameters.')
 
     sp = parser.add_subparsers()
     sp_train = sp.add_parser('train', parents=[common_parser])

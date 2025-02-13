@@ -87,15 +87,15 @@ def visualize_results(args):
         clean_scene(start_with_strings=["Camera", "Light"])
         setup_lights()
         # hide the main collections
-        bpy.context.scene.view_layers['View Layer'].layer_collection.children['Main'].hide_viewport = True
-        bpy.context.scene.view_layers['View Layer'].layer_collection.children['Main'].exclude = True
+        bpy.context.view_layer.layer_collection.children['Main'].hide_viewport = True
+        bpy.context.view_layer.layer_collection.children['Main'].exclude = True
         for obj_dir, render_dir, title in work:
             file_names = sorted([f.stem for f in obj_dir.glob("*.obj")])
             if args.parallel > 1:
                 file_names = [file for file in file_names if hash_file_name(file) % args.parallel == args.mod]
             for file_name in file_names:
                 original_obj_file_path = obj_dir.joinpath(f'{file_name}.obj')
-                bpy.ops.import_scene.obj(filepath=str(original_obj_file_path))
+                bpy.ops.wm.obj_import(filepath=str(original_obj_file_path))
                 imported_object = bpy.context.selected_objects[0]
                 imported_object.hide_render = False
                 imported_object.data.materials.clear()
