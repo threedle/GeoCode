@@ -19,20 +19,20 @@ def get_graph_feature(x, k=20, idx=None):
     if idx is None:
         idx = knn(x, k=k)  # (batch_size, num_points, k)
     device = x.device
+
+    # separate indices for each batch
     idx_base = torch.arange(0, batch_size, device=device).view(-1, 1, 1) * num_points
-
     idx = idx + idx_base
-
     idx = idx.view(-1)
 
-    _, num_dims, _ = x.size()
+    _, num_dims, _ = x.size()  # at first num_dims = 3, then num_dims = 16 (or 64 if increased size), and so on...
 
     x = x.transpose(2, 1).contiguous()  # (batch_size, num_points, num_dims)  -> (batch_size*num_points, num_dims) #   batch_size * num_points * k + range(0, batch_size*num_points)
     feature = x.view(batch_size * num_points, -1)[idx, :]
     feature = feature.view(batch_size, num_points, k, num_dims)
     x = x.view(batch_size, num_points, 1, num_dims).repeat(1, 1, k, 1)
 
-    feature = torch.cat((feature - x, x), dim=3).permute(0, 3, 1, 2).contiguous()
+    feature = torch.cat((feature - x, x), dim=3).permute(0, 3, 1, 2).contiguous()  # (batch_size, num_dims, num_points, k) and num_dims is now 6 then 32, and so on...
 
     return feature
 
@@ -114,7 +114,7 @@ class DGCNN(nn.Module):
     def forward(self, x):
         x = get_graph_feature(x, k=self.k)
         x = self.conv1(x)
-        x1 = x.max(dim=-1, keepdim=False)[0]
+        x1 = x.max(dim=-1, keepdim=False)[0]  # we are given back the values and indices, but we only need the values, hence the [0]
 
         x = get_graph_feature(x1, k=self.k)
         x = self.conv2(x)

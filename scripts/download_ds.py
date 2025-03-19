@@ -48,6 +48,11 @@ def download_ds(args):
         ds_url = "https://figshare.com/ndownloader/files/39487033?private_link=53f9de1359c3e3cc3218"
         ds_zip_file_name = "TableDataset.zip"
         best_epoch = 537
+    elif args.domain == Domain.ceiling_lamp:
+        md5 = "a6e2e29790f74219539f4c151f566ba8"
+        ds_url = "https://figshare.com/ndownloader/files/53115095?private_link=e568d4700d54a8f48289"
+        ds_zip_file_name = "CeilingLampDataset.zip"
+        best_epoch = 259
     else:
         raise Exception(f'Domain [{args.domain}] is not recognized.')
 

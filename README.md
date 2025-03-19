@@ -1,4 +1,6 @@
 # GeoCode: Interpretable Shape Programs [[Project Page](https://threedle.github.io/GeoCode/)]
+[![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-121013?logo=github&logoColor=white)](https://threedle.github.io/GeoCode/)
+[![CGF](https://img.shields.io/badge/CGF-GeoCode-123d80.svg)](https://onlinelibrary.wiley.com/doi/10.1111/cgf.15276)
 [![arXiv](https://img.shields.io/badge/arXiv-GeoCode-b31b1b.svg)](https://arxiv.org/abs/2212.11715)
 
 *[Ofek Pearl](https://github.com/ofekp), [Itai Lang](https://itailang.github.io/), [Yuhua Hu](https://yuhuahu310.github.io/), [Raymond A. Yeh](https://raymond-yeh.com/), [Rana Hanocka](https://people.cs.uchicago.edu/~ranahanocka/)*
@@ -7,7 +9,7 @@
 
 ![alt GeoCode](resources/teaser.png)
 
-> The task of crafting procedural programs capable of generating structurally valid 3D shapes easily and intuitively remains an elusive goal in computer vision and graphics. Within the graphics community, generating procedural 3D models has shifted to using node graph systems. They allow the artist to create complex shapes and animations through visual programming. Being a high-level design tool, they made procedural 3D modeling more accessible. However, crafting those node graphs demands expertise and training. We present GeoCode, a novel framework designed to extend an existing node graph system and significantly lower the bar for the creation of new procedural 3D shape programs. Our approach meticulously balances expressiveness and generalization for part-based shapes. We propose a curated set of new geometric building blocks that are expressive and reusable across domains. We showcase three innovative and expressive programs developed through our technique and geometric building blocks. Our programs enforce intricate rules, empowering users to execute intuitive high-level parameter edits that seamlessly propagate throughout the entire shape at a lower level while maintaining its validity. To evaluate the user-friendliness of our geometric building blocks among non-experts, we conduct a user study that demonstrates their ease of use and highlights their applicability across diverse domains. Empirical evidence shows the superior accuracy of GeoCode in inferring and recovering 3D shapes compared to an existing competitor. Furthermore, our method demonstrates superior expressiveness compared to alternatives that utilize coarse primitives. Notably, we illustrate the ability to execute controllable local and global shape manipulations.
+> The task of crafting procedural programs capable of generating structurally valid 3D shapes easily and intuitively remains an elusive goal in computer vision and graphics. Within the graphics community, generating procedural 3D models has shifted to using node graph systems. They allow the artist to create complex shapes and animations through visual programming. Being a high-level design tool, they made procedural 3D modeling more accessible. However, crafting those node graphs demands expertise and training. We present GeoCode, a novel framework designed to extend an existing node graph system and significantly lower the bar for the creation of new procedural 3D shape programs. Our approach meticulously balances expressiveness and generalization for part-based shapes. We propose a curated set of new geometric building blocks that are expressive and reusable across domains. We showcase three innovative and expressive programs developed through our technique and geometric building blocks. Our programs enforce intricate rules, empowering users to execute intuitive high-level parameter edits that seamlessly propagate throughout the entire shape at a lower level while maintaining its validity. To evaluate the user-friendliness of our geometric building blocks among non-experts, we conducted a user study that demonstrates their ease of use and highlights their applicability across diverse domains. Empirical evidence shows the superior accuracy of GeoCode in inferring and recovering 3D shapes compared to an existing competitor. Furthermore, our method demonstrates superior expressiveness compared to alternatives that utilize coarse primitives. Notably, we illustrate the ability to execute controllable local and global shape manipulations.
 
 <p align="center">
 <img src="https://github.com/threedle/GeoCode/releases/download/v.1.0.0/demo_video_chair.gif" width=250 alt="3D shape recovery"/>
@@ -15,12 +17,32 @@
 <img src="https://github.com/threedle/GeoCode/releases/download/v.1.0.0/demo_video_table.gif" width=250 alt="3D shape recovery"/>
 </p>
 <p align="center">
+[MARCH 2025 UPDATE] Two new programs created with GeoCode Blender add-on were added, additionally the chair program was recreated using the GeoCode add-on.
+</p>
+<p align="center">
+<img src="https://github.com/threedle/GeoCode/releases/download/v.1.0.0/demo_video_cabinet.gif" width=250 alt="3D shape recovery"/>
+<img src="https://github.com/threedle/GeoCode/releases/download/v.1.0.0/demo_video_ceiling_lamp.gif" width=250 alt="3D shape recovery"/>
+</p>
+<p align="center">
 A demo video of our program is available on our <a href="https://threedle.github.io/GeoCode/">project page</a>.
 </p>
 
+## \[MARCH 2025 UPDATE\] GeoCode Blender Add-On
+![alt GeoCode](resources/geocode_addon.png)
+
+We provide a Blender add-on that will help non-experts to create procedural programs in Blender.
+Please check out our GeoCode Blender add-on here:
+
+[![GeoCode Blender Add-On Download](https://img.shields.io/badge/GeoCode%20Blender%20Add--On-%2305CC47.svg?logo=github&logoColor=white)](https://github.com/threedle/GeoCode/releases/latest/download/geocode_addon.zip)
+
+
+We made a Google docs guide available (based on our user study):
+
+[![GeoCode Blender Add-On Guide](https://img.shields.io/badge/GeoCode%20Blender%20Add--On%20Guide-4285F4?logo=googledrive&logoColor=fff)](https://docs.google.com/document/d/1drYMArv78MIXIhPcIAJ_1PYlvWXE_omy7CjsohkiJgk/edit?usp=sharing)
+
 ## Requirements
-- Python 3.8
-- CUDA 11.8
+- Python 3.8 (or higher)
+- CUDA 11.8 (or higher)
 - GPU, minimum 8 GB ram
 - During training, a machine with 5 CPUs is recommended 
 - During _visualization_ and _sketch generation_, we recommend a setup with multiple GPU nodes, refer to the additional information to run in parallel on all available nodes
@@ -278,10 +300,11 @@ scripts/download_ds_processing_scripts.py
 
 # Citation
 ```
-@article{pearl2022geocode,
-  title={GeoCode: Interpretable Shape Programs},
-  author={Pearl, Ofek and Lang, Itai and Hu, Yuhua and Yeh, Raymond A. and Hanocka, Rana},
-  booktitle={arXiv preprint arxiv:2212.11715},
-  year={2022}
+@inproceedings{pearl2022geocode,
+  title={Geocode: Interpretable Shape Programs},
+  author={Pearl, Ofek and Lang, Itai and Hu, Yuhua and Yeh, Raymond A and Hanocka, Rana},
+  booktitle={Computer Graphics Forum},
+  pages={e15276},
+  organization={Wiley Online Library}
 }
 ```
