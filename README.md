@@ -15,7 +15,11 @@
 <img src="https://github.com/threedle/GeoCode/releases/download/v.1.0.0/demo_video_chair.gif" width=250 alt="3D shape recovery"/>
 <img src="https://github.com/threedle/GeoCode/releases/download/v.1.0.0/demo_video_vase.gif" width=250 alt="3D shape recovery"/>
 <img src="https://github.com/threedle/GeoCode/releases/download/v.1.0.0/demo_video_table.gif" width=250 alt="3D shape recovery"/>
+</p>
+<p align="center">
+[MARCH 2025 UPDATE] Two new programs created with GeoCode Blender add-on were added, additionally the chair program was recreated using the GeoCode add-on.
 <img src="https://github.com/threedle/GeoCode/releases/download/v.1.0.0/demo_video_cabinet.gif" width=250 alt="3D shape recovery"/>
+<img src="https://github.com/threedle/GeoCode/releases/download/v.1.0.0/demo_video_ceiling_lamp.gif" width=250 alt="3D shape recovery"/>
 </p>
 <p align="center">
 A demo video of our program is available on our <a href="https://threedle.github.io/GeoCode/">project page</a>.
