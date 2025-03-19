@@ -18,6 +18,8 @@
 </p>
 <p align="center">
 [MARCH 2025 UPDATE] Two new programs created with GeoCode Blender add-on were added, additionally the chair program was recreated using the GeoCode add-on.
+</p>
+<p align="center">
 <img src="https://github.com/threedle/GeoCode/releases/download/v.1.0.0/demo_video_cabinet.gif" width=250 alt="3D shape recovery"/>
 <img src="https://github.com/threedle/GeoCode/releases/download/v.1.0.0/demo_video_ceiling_lamp.gif" width=250 alt="3D shape recovery"/>
 </p>
