@@ -57,7 +57,7 @@ def visualize_results(args):
     """
     Before using this method, a test dataset should be evaluated using the model
     """
-    test_ds_dir = Path(args.dataset_dir, args.phase).expanduser()
+    test_ds_dir = Path(args.dataset_dir,args.dataset_name, args.phase).expanduser()
     if not test_ds_dir.is_dir():
         raise Exception(f"Expected a \'{args.phase}\' dataset directory with 3D object to evaluate")
 
@@ -163,6 +163,7 @@ def main():
 
     parser = argparse.ArgumentParser(prog='dataset_generator')
     parser.add_argument('--dataset-dir', type=str, required=True, help='Path to dataset directory')
+    parser.add_argument('--dataset-name',type=str, required=True, help='Name of the 3d object')
     parser.add_argument('--phase', type=str, required=True, help='E.g. train, test or val')
     parser.add_argument('--exp-name', type=str, required=True)
     parser.add_argument('--parallel', type=int, default=1)
